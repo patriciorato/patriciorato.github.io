@@ -32,7 +32,7 @@
   .wrap{
     max-width:900px;
     margin:0 auto;
-    padding:40px 24px 80px;
+    padding:24px 24px 80px;
   }
 
   header{
@@ -43,6 +43,7 @@
     display:flex;
     justify-content:space-between;
     align-items:center;
+    padding-top:20px;
     padding-bottom:24px;
     margin-bottom:6px;
   }
@@ -116,12 +117,9 @@
     margin-left:102px;
     padding-left:10px;
   }
-  .panel.open{
-    max-height:600px;
-    padding-bottom:22px;
-  }
   .panel-inner{
     padding-top:2px;
+    padding-bottom:22px;
     font-size:14px;
     color:var(--desc);
   }
@@ -226,17 +224,16 @@ const LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do e
 
 const ENTRIES = [
   { date: "Jul 2026", text: "Spotify: Fan Life 2026", expand: { desc: LOREM, media: "Image / video" } },
-  { date: "Mar 2026", text: "Lunch Time: A Photo Essay", expand: { desc: LOREM, media: "Image / video" } },
+  { date: "Mar 2026", text: "Lunch Time: A Photo Essay", expand: { media: [
+    { type: "embed", src: "https://drive.google.com/file/d/1gY_EK7Uo-Cv-vkKTeVMmrW09cZfsPzpB/preview" },
+    { type: "embed", src: "https://drive.google.com/file/d/1c31GFR_7IM3Ap_HCBLmBKnDNvj0tYcNM/preview" },
+    { type: "embed", src: "https://drive.google.com/file/d/1pzo8n9uCf2W2_vnHkdCeu2EnUhG-Kan2/preview" },
+  ] } },
   { date: "Dec 2025", text: "Spotify: 2025 Wrapped", expand: { desc: LOREM, media: "Image / video" } },
-  { date: "Aug 2025", text: "Spotify: Fan Life 2025", expand: { desc: LOREM, media: [
-    { type: "image", src: "https://storage.googleapis.com/pr-newsroom-wp/1/2025/08/FANLIFE_7posters_FTR_1440x820-1-1440x733.png", alt: "Fan Life 2025 poster" },
-    { type: "embed", src: "https://www.youtube.com/embed/m8H6hB_aj_w" },
-    { type: "embed", src: "https://www.youtube.com/embed/MwxsEV6hybA" },
-    { type: "embed", src: "https://www.youtube.com/embed/KPJ9JQas9EI" },
-    { type: "embed", src: "https://www.youtube.com/embed/StCOimcz6wU" },
-    { type: "embed", src: "https://www.youtube.com/embed/dRIh59pKRLk" },
-    { type: "embed", src: "https://www.youtube.com/embed/D8y3BJcR0SE" },
-    { type: "embed", src: "https://www.youtube.com/embed/6BSL_QADNW8" },
+  { date: "Aug 2025", text: "Spotify: Fan Life 2025", expand: { desc: "Spotify's global tentpole campaign highlighting fandom rituals, with real fans captured across film and photography, spotlighting the fandoms of Bad Bunny, Charli xcx, Lil Uzi Vert, Rezz, Sleep Token, Megan Moroney, and Pitbull. Read more <a href=\"https://newsroom.spotify.com/2025-08-26/fan-life-global-campaign-returns/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+    { type: "embed", src: "https://drive.google.com/file/d/1clyhoomBfDEE1xhQ8w63lQh1PONhdTg7/preview" },
+    { type: "embed", src: "https://drive.google.com/file/d/1X-o1vxZ6dRC5K9WkH9o-oTauJjhNcUWB/preview" },
+    { type: "embed", src: "https://drive.google.com/file/d/1uhSWl_INsEIwtZYSEZjwHYfKoTxsoVJ8/preview" },
   ] } },
   { date: "Jan 2025", text: "Spotify: Bad Bunny DeBÍ TiRAR MáS FOToS", expand: { desc: LOREM, media: "Image / video" } },
   { date: "Dec 2024", text: "Spotify: 2024 Wrapped", expand: { desc: LOREM, media: "Image / video" } },
@@ -307,17 +304,26 @@ function renderLog(){
       if (item.expand.link) html += `<p><a href="${item.expand.link.href}">${item.expand.link.label}</a></p>`;
       inner.innerHTML = html;
 
-      if (item.expand.media) {
-        const items = Array.isArray(item.expand.media) ? item.expand.media : [item.expand.media];
-        items.forEach(m => inner.appendChild(buildMediaEl(m)));
-      }
-
       panel.appendChild(inner);
       log.appendChild(panel);
 
+      let mediaBuilt = false;
+
       row.addEventListener("click", () => {
-        row.classList.toggle("open");
-        panel.classList.toggle("open");
+        const opening = !row.classList.contains("open");
+
+        // Build the media (images/video/iframes) the first time this entry
+        // is opened, not upfront on page load — keeps hidden entries from
+        // silently loading photos/videos in the background before anyone
+        // ever clicks them.
+        if (opening && !mediaBuilt && item.expand.media) {
+          const items = Array.isArray(item.expand.media) ? item.expand.media : [item.expand.media];
+          items.forEach(m => inner.appendChild(buildMediaEl(m)));
+          mediaBuilt = true;
+        }
+
+        row.classList.toggle("open", opening);
+        panel.style.maxHeight = opening ? panel.scrollHeight + "px" : "0px";
       });
     }
   });
