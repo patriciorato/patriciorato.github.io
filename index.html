@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>patricio</title>
+<style>
+  :root{
+    --bg:#f5f3ef;
+    --ink:#121212;
+    --muted:#8a8a8a;
+    --line:#c9c9c6;
+    --hover:#0037ff;
+    --desc:#333333;
+    --media-bg:#1a2230;
+    --media-fg:#8fa0c0;
+  }
+  *{box-sizing:border-box;transition:background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size:14px;
+    line-height:1.45;
+    text-transform:lowercase;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--ink);}
+  a:hover{color:var(--hover);}
+
+  .wrap{
+    max-width:900px;
+    margin:0 auto;
+    padding:40px 24px 80px;
+  }
+
+  header{
+    position:sticky;
+    top:0;
+    background:var(--bg);
+    z-index:10;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding-bottom:24px;
+    margin-bottom:6px;
+  }
+  .logo{
+    font-size:14px;
+    font-weight:700;
+    text-decoration:none;
+    letter-spacing:0.5px;
+  }
+  .logo:hover{
+    color:var(--ink);
+  }
+  .social{
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  .social a{
+    color:var(--muted);
+    display:flex;
+    transition:color 0.15s ease;
+  }
+  .social a:hover{
+    color:var(--hover);
+  }
+  .social svg{
+    width:20px;
+    height:20px;
+  }
+
+  /* --- LOG --- */
+  .log{
+    margin-top:24px;
+  }
+  .entry{
+    display:flex;
+    align-items:flex-start;
+    padding:14px 0;
+    border-bottom:1px solid transparent;
+    cursor:default;
+  }
+  .entry.clickable{cursor:pointer;}
+  .entry.clickable .date,
+  .entry.clickable .headline{
+    transition:color 0.15s ease;
+  }
+  .entry.clickable:hover .date,
+  .entry.clickable:hover .headline{
+    color:var(--hover);
+  }
+  .entry .date{
+    flex:0 0 92px;
+    color:var(--muted);
+    font-size:14px;
+    padding-top:2px;
+    user-select:none;
+  }
+  .entry .headline{
+    flex:1 1 auto;
+    font-size:14px;
+  }
+  .entry .headline a{
+    text-decoration:underline;
+    text-underline-offset:2px;
+  }
+
+  .panel{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height 0.3s ease;
+    margin-left:102px;
+    padding-left:10px;
+  }
+  .panel.open{
+    max-height:600px;
+    padding-bottom:22px;
+  }
+  .panel-inner{
+    padding-top:2px;
+    font-size:14px;
+    color:var(--desc);
+  }
+  .panel-inner p{margin:0 0 10px;}
+  .panel-inner a{text-decoration:underline;}
+  .media{
+    width:100%;
+    max-width:520px;
+    background:var(--media-bg);
+    color:var(--media-fg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    aspect-ratio:16/10;
+    font-size:13px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    margin-top:8px;
+    border-radius:2px;
+    overflow:hidden;
+  }
+  .media + .media{
+    margin-top:12px;
+  }
+  .media img,
+  .media video{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .media iframe{
+    width:100%;
+    height:100%;
+    border:none;
+    display:block;
+  }
+
+  @media (max-width:560px){
+    .entry .date{flex-basis:68px;}
+    .panel{margin-left:78px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <a class="logo" href="#top">patricio</a>
+    <div class="social">
+      <a href="https://instagram.com/yourhandle" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" stroke="none"/></svg>
+      </a>
+      <a href="https://linkedin.com/in/yourhandle" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1-.02 5 2.5 2.5 0 0 1 .02-5zM3 8.98h4v12.02H3V8.98zM9 8.98h3.8v1.64h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1v6.33h-4v-5.61c0-1.34-.02-3.06-1.87-3.06-1.87 0-2.16 1.46-2.16 2.96v5.71H9V8.98z"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <div id="log" class="log"></div>
+
+</div>
+
+<script>
+/*
+  ============================================================
+  EDIT YOUR CONTENT HERE. This is the only place you need to touch.
+  ============================================================
+  Add one object per line item, most recent first (top of array = top of page).
+
+  Fields:
+    date     "Mon Year", e.g. "Jan 2025"  (required)
+    text     headline shown in the log. Can include an <a href="..."> if the
+             whole line should link out to something (a project, article, etc).
+    expand   OPTIONAL. If present, the headline becomes clickable and reveals
+             this content below it. Object with:
+               desc  - one or two lines of plain text/HTML description
+               media - OPTIONAL. Three ways to set this:
+                       1) a plain string, e.g. "Image / video"
+                          → shows a gray placeholder box (nothing to add yet)
+                       2) { type: "image", src: "media/filename.jpg", alt: "..." }
+                          → put the actual file in the media/ folder next to
+                            this HTML file, then point src at it
+                       3) { type: "video", src: "media/filename.mp4" }
+                          → same idea, a local video file in media/
+                       4) { type: "embed", src: "https://www.youtube.com/embed/VIDEO_ID" }
+                          → for anything already hosted elsewhere (YouTube,
+                            Vimeo, etc). Use the platform's official embed URL.
+                       Multiple items for one entry? Use an array of the
+                       objects above, e.g. [ {type:"image",...}, {type:"embed",...} ]
+                       — they'll stack in order.
+               link  - OPTIONAL { label, href } shown as a text link under desc
+
+  Leave "media" out entirely for blurb-only entries (desc, no image/video).
+
+  Placeholder rows below are just "Date" / "Headline" so we can dial in the
+  layout before real content goes in. Swap dates and text once ready — the
+  "expand" block on some rows shows how the click-to-open behavior looks.
+*/
+
+const LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+
+const ENTRIES = [
+  { date: "Jul 2026", text: "Spotify: Fan Life 2026", expand: { desc: LOREM, media: "Image / video" } },
+  { date: "Mar 2026", text: "Lunch Time: A Photo Essay", expand: { desc: LOREM, media: "Image / video" } },
+  { date: "Dec 2025", text: "Spotify: 2025 Wrapped", expand: { desc: LOREM, media: "Image / video" } },
+  { date: "Aug 2025", text: "Spotify: Fan Life 2025", expand: { desc: LOREM, media: [
+    { type: "image", src: "https://storage.googleapis.com/pr-newsroom-wp/1/2025/08/FANLIFE_7posters_FTR_1440x820-1-1440x733.png", alt: "Fan Life 2025 poster" },
+    { type: "embed", src: "https://www.youtube.com/embed/m8H6hB_aj_w" },
+    { type: "embed", src: "https://www.youtube.com/embed/MwxsEV6hybA" },
+    { type: "embed", src: "https://www.youtube.com/embed/KPJ9JQas9EI" },
+    { type: "embed", src: "https://www.youtube.com/embed/StCOimcz6wU" },
+    { type: "embed", src: "https://www.youtube.com/embed/dRIh59pKRLk" },
+    { type: "embed", src: "https://www.youtube.com/embed/D8y3BJcR0SE" },
+    { type: "embed", src: "https://www.youtube.com/embed/6BSL_QADNW8" },
+  ] } },
+  { date: "Jan 2025", text: "Spotify: Bad Bunny DeBÍ TiRAR MáS FOToS", expand: { desc: LOREM, media: "Image / video" } },
+  { date: "Dec 2024", text: "Spotify: 2024 Wrapped", expand: { desc: LOREM, media: "Image / video" } },
+  { date: "Aug 2022", text: "ADCOLOR FUTURE", expand: { desc: LOREM, media: "Image / video" } },
+  { date: "Sep 2021", text: "Spotify: Aspiring Marketing Professionals Program", expand: { desc: LOREM, media: "Image / video" } },
+  { date: "Oct 2018", text: "Univision: Vota Conmigo", expand: { desc: LOREM, media: "Image / video" } },
+  { date: "Aug 2018", text: "The Academy of Motion Picture Arts and Sciences: Gold Rising", expand: { desc: LOREM, media: "Image / video" } },
+];
+
+function buildMediaEl(m){
+  const media = document.createElement("div");
+  media.className = "media";
+
+  if (typeof m === "string") {
+    // Plain label = placeholder, nothing uploaded yet.
+    media.textContent = m;
+  } else if (m.type === "image") {
+    const img = document.createElement("img");
+    img.src = m.src;
+    img.alt = m.alt || "";
+    media.appendChild(img);
+  } else if (m.type === "video") {
+    const video = document.createElement("video");
+    video.src = m.src;
+    video.controls = true;
+    media.appendChild(video);
+  } else if (m.type === "embed") {
+    const iframe = document.createElement("iframe");
+    iframe.src = m.src;
+    iframe.loading = "lazy";
+    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+    iframe.allowFullscreen = true;
+    media.appendChild(iframe);
+  }
+
+  return media;
+}
+
+function renderLog(){
+  const log = document.getElementById("log");
+  log.innerHTML = "";
+  ENTRIES.forEach((item, i) => {
+    const hasExpand = !!item.expand;
+    const row = document.createElement("div");
+    row.className = "entry" + (hasExpand ? " clickable" : "");
+
+    const date = document.createElement("div");
+    date.className = "date";
+    date.textContent = item.date;
+
+    const headline = document.createElement("div");
+    headline.className = "headline";
+    headline.innerHTML = item.text;
+
+    row.appendChild(date);
+    row.appendChild(headline);
+
+    log.appendChild(row);
+
+    if (hasExpand) {
+      const panel = document.createElement("div");
+      panel.className = "panel";
+      const inner = document.createElement("div");
+      inner.className = "panel-inner";
+
+      let html = "";
+      if (item.expand.desc) html += `<p>${item.expand.desc}</p>`;
+      if (item.expand.link) html += `<p><a href="${item.expand.link.href}">${item.expand.link.label}</a></p>`;
+      inner.innerHTML = html;
+
+      if (item.expand.media) {
+        const items = Array.isArray(item.expand.media) ? item.expand.media : [item.expand.media];
+        items.forEach(m => inner.appendChild(buildMediaEl(m)));
+      }
+
+      panel.appendChild(inner);
+      log.appendChild(panel);
+
+      row.addEventListener("click", () => {
+        row.classList.toggle("open");
+        panel.classList.toggle("open");
+      });
+    }
+  });
+}
+
+renderLog();
+</script>
+</body>
+</html>
