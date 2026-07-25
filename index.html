@@ -125,37 +125,39 @@
   }
   .panel-inner p{margin:0 0 10px;}
   .panel-inner a{text-decoration:underline;}
-  .media{
+  .media-item{
     width:100%;
     max-width:520px;
+    margin-top:8px;
+    border-radius:2px;
+  }
+  .media-item + .media-item{
+    margin-top:12px;
+  }
+  .media-item--box{
     background:var(--media-bg);
     color:var(--media-fg);
     display:flex;
     align-items:center;
     justify-content:center;
-    aspect-ratio:16/10;
+    aspect-ratio:16/9;
     font-size:13px;
     letter-spacing:0.5px;
     text-transform:uppercase;
-    margin-top:8px;
-    border-radius:2px;
     overflow:hidden;
   }
-  .media + .media{
-    margin-top:12px;
-  }
-  .media img,
-  .media video{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
-  }
-  .media iframe{
+  .media-item--box iframe,
+  .media-item--box video{
     width:100%;
     height:100%;
     border:none;
     display:block;
+  }
+  .media-item--photo img{
+    width:100%;
+    height:auto;
+    display:block;
+    border-radius:2px;
   }
 
   @media (max-width:560px){
@@ -225,14 +227,14 @@ const LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do e
 const ENTRIES = [
   { date: "Jul 2026", text: "Spotify: Fan Life 2026", expand: { desc: LOREM, media: "Image / video" } },
   { date: "Mar 2026", text: "Lunch Time: A Photo Essay", expand: { media: [
-    { type: "embed", src: "https://drive.google.com/file/d/1gY_EK7Uo-Cv-vkKTeVMmrW09cZfsPzpB/preview" },
-    { type: "embed", src: "https://drive.google.com/file/d/1c31GFR_7IM3Ap_HCBLmBKnDNvj0tYcNM/preview" },
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1gY_EK7Uo-Cv-vkKTeVMmrW09cZfsPzpB=s0" },
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1c31GFR_7IM3Ap_HCBLmBKnDNvj0tYcNM=s0" },
     { type: "embed", src: "https://drive.google.com/file/d/1pzo8n9uCf2W2_vnHkdCeu2EnUhG-Kan2/preview" },
   ] } },
   { date: "Dec 2025", text: "Spotify: 2025 Wrapped", expand: { desc: LOREM, media: "Image / video" } },
   { date: "Aug 2025", text: "Spotify: Fan Life 2025", expand: { desc: "Spotify's global tentpole campaign highlighting fandom rituals, with real fans captured across film and photography, spotlighting the fandoms of Bad Bunny, Charli xcx, Lil Uzi Vert, Rezz, Sleep Token, Megan Moroney, and Pitbull. Read more <a href=\"https://newsroom.spotify.com/2025-08-26/fan-life-global-campaign-returns/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
-    { type: "embed", src: "https://drive.google.com/file/d/1clyhoomBfDEE1xhQ8w63lQh1PONhdTg7/preview" },
-    { type: "embed", src: "https://drive.google.com/file/d/1X-o1vxZ6dRC5K9WkH9o-oTauJjhNcUWB/preview" },
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1clyhoomBfDEE1xhQ8w63lQh1PONhdTg7=s0" },
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1X-o1vxZ6dRC5K9WkH9o-oTauJjhNcUWB=s0" },
     { type: "embed", src: "https://drive.google.com/file/d/1uhSWl_INsEIwtZYSEZjwHYfKoTxsoVJ8/preview" },
   ] } },
   { date: "Jan 2025", text: "Spotify: Bad Bunny DeBÍ TiRAR MáS FOToS", expand: { desc: LOREM, media: "Image / video" } },
@@ -244,32 +246,41 @@ const ENTRIES = [
 ];
 
 function buildMediaEl(m){
-  const media = document.createElement("div");
-  media.className = "media";
-
-  if (typeof m === "string") {
-    // Plain label = placeholder, nothing uploaded yet.
-    media.textContent = m;
-  } else if (m.type === "image") {
+  // Images render as plain <img> tags at their natural size — no forced
+  // box shape, no letterboxing, no viewer chrome (zoom controls etc).
+  if (typeof m === "object" && m.type === "image") {
+    const wrap = document.createElement("div");
+    wrap.className = "media-item media-item--photo";
     const img = document.createElement("img");
     img.src = m.src;
     img.alt = m.alt || "";
-    media.appendChild(img);
+    wrap.appendChild(img);
+    return wrap;
+  }
+
+  // Everything else (placeholder text, video, embeds) needs a fixed box
+  // since iframes/videos don't have a size we can read up front.
+  const box = document.createElement("div");
+  box.className = "media-item media-item--box";
+
+  if (typeof m === "string") {
+    // Plain label = placeholder, nothing uploaded yet.
+    box.textContent = m;
   } else if (m.type === "video") {
     const video = document.createElement("video");
     video.src = m.src;
     video.controls = true;
-    media.appendChild(video);
+    box.appendChild(video);
   } else if (m.type === "embed") {
     const iframe = document.createElement("iframe");
     iframe.src = m.src;
     iframe.loading = "lazy";
     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
     iframe.allowFullscreen = true;
-    media.appendChild(iframe);
+    box.appendChild(iframe);
   }
 
-  return media;
+  return box;
 }
 
 function renderLog(){
