@@ -308,7 +308,17 @@
     /* smaller viewports leave no horizontal slack next to media items, so
        shrink the sticker and pull its overhang back in proportionally to
        avoid it getting clipped by .panel's overflow:hidden */
-    .sticker{width:56px !important;right:-30px !important;bottom:-31px !important;}
+    /* Stickers are positioned via either `right` or `left` (whichever side
+       they're pinned to — see the data-side tag set in buildMediaEl/the
+       click handler above). Each variant needs its OWN scaled-down mobile
+       offset; setting both left and right on the same element at once would
+       be an over-constrained case browsers resolve by silently dropping one
+       of them, which is exactly what previously made left-pinned stickers
+       vanish on mobile (they kept their full desktop offset, calibrated for
+       a much bigger sticker, and got pushed off-screen). */
+    .sticker{width:56px !important;bottom:-31px !important;}
+    .sticker[data-side="right"]{right:-30px !important;}
+    .sticker[data-side="left"]{left:-32px !important;}
   }
 
   /* little easter egg — animated gif next to the word "claude" */
@@ -328,10 +338,10 @@
   <header>
     <a class="logo" href="#top">patricio</a>
     <div class="social">
-      <a href="https://instagram.com/yourhandle" target="_blank" rel="noopener" aria-label="Instagram">
+      <a href="https://www.instagram.com/patriciorato/" target="_blank" rel="noopener" aria-label="Instagram">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" stroke="none"/></svg>
       </a>
-      <a href="https://linkedin.com/in/yourhandle" target="_blank" rel="noopener" aria-label="LinkedIn">
+      <a href="https://www.linkedin.com/in/josepatriciort/" target="_blank" rel="noopener" aria-label="LinkedIn">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1-.02 5 2.5 2.5 0 0 1 .02-5zM3 8.98h4v12.02H3V8.98zM9 8.98h3.8v1.64h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1v6.33h-4v-5.61c0-1.34-.02-3.06-1.87-3.06-1.87 0-2.16 1.46-2.16 2.96v5.71H9V8.98z"/></svg>
       </a>
     </div>
@@ -403,13 +413,13 @@ const ENTRIES = [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1c31GFR_7IM3Ap_HCBLmBKnDNvj0tYcNM=s0" },
     { type: "embed", src: "https://drive.google.com/file/d/1pzo8n9uCf2W2_vnHkdCeu2EnUhG-Kan2/preview" },
   ] } },
-  { date: "Dec 2025", text: "2025 Spotify Wrapped", expand: { desc: LOREM, media: [
+  { date: "Dec 2025", text: "2025 Spotify Wrapped", expand: { desc: "Spotify's annual global Wrapped campaign, celebrating the year in listening. This year's initiative expands into real-world fan destinations and live performances, rallying points for top fans. Read more <a href=\"https://newsroom.spotify.com/2025-12-03/wrapped-marketing-campaign/\" target=\"_blank\" rel=\"noopener\">here</a>, <a href=\"https://newsroom.spotify.com/2025-12-16/wrapped-fan-destination-photos/\" target=\"_blank\" rel=\"noopener\">here</a>, and <a href=\"https://newsroom.spotify.com/2025-wrapped/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1w_A7mR4Bm95w0XPCEVfe9KJfETeuRsyV=s0" },
     [
-      { type: "image", src: "https://lh3.googleusercontent.com/d/1UrgTTG20YdfuPpqfNRK5u_jbF6RbOmRj=s0" },
-      { type: "image", src: "https://lh3.googleusercontent.com/d/1zEk6OGxOS8zDCJjCOhytqeFmyZRLw5Dj=s0" },
-      { type: "image", src: "https://lh3.googleusercontent.com/d/1p3B9a_YF14qXAsxR1msvoegd-WpKJYEl=s0" },
-      { type: "image", src: "https://lh3.googleusercontent.com/d/1MN8ilEuJPsKP51MXcw1wXj3YLjvQcE9M=s0" },
+      { type: "image", src: "https://lh3.googleusercontent.com/d/1YzWu8LLqhrKN71SBtTk--OQ6T-kYYvLR=s0" },
+      { type: "image", src: "https://lh3.googleusercontent.com/d/1KtPwO1pRMFmYjq5s9ZN4MIdaI3tJHetz=s0" },
+      { type: "image", src: "https://lh3.googleusercontent.com/d/14s3evBqg0_bBn2IQaH2FPhpydZWu-6ud=s0" },
+      { type: "image", src: "https://lh3.googleusercontent.com/d/1kDdGNknfW9eZi3XsqC5ErB2vVKsGv1Ok=s0" },
     ],
     { type: "image", src: "https://lh3.googleusercontent.com/d/1YBTZM80CAwTMPnaaNGjHtvm0pt4nTnIq=s0" },
     { type: "embed", src: "https://drive.google.com/file/d/1Tuz5JrGmm03u2JovFIrXHnsjya_Stnig/preview" },
@@ -420,7 +430,7 @@ const ENTRIES = [
     ],
     { type: "image", src: "https://lh3.googleusercontent.com/d/1lz53ip2_eyBTf-_YIrdmvbXrAEBNDNH6=s0" },
   ] } },
-  { date: "Aug 2025", text: "Fan Life 2025", expand: { desc: "Spotify's global brand tentpole campaign highlighting fandom rituals, and featuring real fans across film and photography. This run spotlights the fandoms of Bad Bunny, Charli xcx, Lil Uzi Vert, Rezz, Sleep Token, Megan Moroney, and Pitbull. Read more <a href=\"https://newsroom.spotify.com/2025-08-26/fan-life-global-campaign-returns/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+  { date: "Aug 2025", text: "Fan Life 2025", expand: { desc: "Spotify's global brand tentpole campaign celebrating fandom rituals, and featuring real fans across film and photography. This run spotlights the fandoms of Bad Bunny, Charli xcx, Lil Uzi Vert, Rezz, Sleep Token, Megan Moroney, and Pitbull. Read more <a href=\"https://newsroom.spotify.com/2025-08-26/fan-life-global-campaign-returns/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
     { type: "embed", src: "https://drive.google.com/file/d/1uhSWl_INsEIwtZYSEZjwHYfKoTxsoVJ8/preview" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1clyhoomBfDEE1xhQ8w63lQh1PONhdTg7=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1X-o1vxZ6dRC5K9WkH9o-oTauJjhNcUWB=s0" },
@@ -428,8 +438,8 @@ const ENTRIES = [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1yRiYiPgDMtCPUeJnISJyaAKSSe9Avk9g=s1600" },
   ] } },
   { date: "Jan 2025", text: "Bad Bunny DeBÍ TiRAR MáS FOToS", expand: { desc: [
-    "Tracking Bad Bunny: Cannes Lions and Clio award-winning global treasure hunt tracklist reveal campaign for Benito's sixth solo studio album, Debí Tirar Más Fotos. A partnership between Rimas, Spotify, and Google Maps. Read more <a href=\"https://www.adsoftheworld.com/campaigns/tracking-bad-bunny-case-study\" target=\"_blank\" rel=\"noopener\">here</a>, <a href=\"https://clios.com/winners-gallery/details/206722\" target=\"_blank\" rel=\"noopener\">here</a>, and <a href=\"https://www.adweek.com/creativity/bad-bunnys-love-letter-to-puerto-rico-earns-his-label-a-cannes-lions-grand-prix/\" target=\"_blank\" rel=\"noopener\">here</a>.",
-    "El torneo de dominó: Spotify's album-launch fan activation. A domino tournament in partnership with the Federación de Dominó de Puerto Rico, featuring a performance from Bad Bunny. Read more <a href=\"https://www.playgroundweb.com/news/debi-tirar-mas-fotos-el-torneo-de-domino-40258\" target=\"_blank\" rel=\"noopener\">here</a>.",
+    "Tracking Bad Bunny: Cannes Lions and Clio award-winning scavenger hunt tracklist reveal campaign for Benito's sixth album, Debí Tirar Más Fotos. A partnership between Rimas, Spotify, and Google Maps. Read more <a href=\"https://www.adsoftheworld.com/campaigns/tracking-bad-bunny-case-study\" target=\"_blank\" rel=\"noopener\">here</a>, <a href=\"https://clios.com/winners-gallery/details/206722\" target=\"_blank\" rel=\"noopener\">here</a>, and <a href=\"https://www.adweek.com/creativity/bad-bunnys-love-letter-to-puerto-rico-earns-his-label-a-cannes-lions-grand-prix/\" target=\"_blank\" rel=\"noopener\">here</a>.",
+    "El torneo de dominó: Spotify's album-launch fan activation. A domino tournament with the Federación de Dominó de Puerto Rico, featuring a Bad Bunny performance. Read more <a href=\"https://www.playgroundweb.com/news/debi-tirar-mas-fotos-el-torneo-de-domino-40258\" target=\"_blank\" rel=\"noopener\">here</a>.",
   ], media: [
     { type: "embed", src: "https://drive.google.com/file/d/1YAVMheVF8WcZMQzX7wXujTXCqBF0Pf-o/preview" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1mEJykn31wXfPRxEJOUVkxu31gosNdzH-=s0" },
@@ -439,7 +449,7 @@ const ENTRIES = [
     { type: "sticker", src: "https://lh3.googleusercontent.com/d/1zyUnF0tWksLct_BEucMiCq3ExbAXpLrW=s0", rotate: 18, size: 145, left: "-95px", bottom: "-15px" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1vNfTqQVe_3jsnZMVenfNKZ2Xb40QgdRM=s1600" },
   ] } },
-  { date: "Dec 2024", text: "2024 Spotify Wrapped", expand: { desc: "Spotify's annual Wrapped campaign, marking its tenth year in 2024, spotlighting the year's top listening moments and celebrating the fans, artists, and creators behind a record-breaking year. Read more <a href=\"https://newsroom.spotify.com/2024-wrapped/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+  { date: "Dec 2024", text: "2024 Spotify Wrapped", expand: { desc: "Spotify's annual global Wrapped campaign, marking its tenth year, spotlighting the year's top listening moments and celebrating the fans, artists, and creators behind a record-breaking year. Read more <a href=\"https://newsroom.spotify.com/2024-wrapped/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1KqkYZZWX3pmuwvRYDN5OtNSq-IqPBkZA=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1gCvEgAdKe9hVQgAyorvcCeb_Y7n26soa=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1QmyWLN_m6wXqxpcKP5gR1HmD-rcqs6CY=s0" },
@@ -452,10 +462,10 @@ const ENTRIES = [
       { type: "image", src: "https://lh3.googleusercontent.com/d/1Q8xYQ219v8p_Dc4tjEQkj9_L7UMfFcQE=s0" },
     ],
   ] } },
-  { date: "Aug 2022", text: "ADCOLOR FUTURE", expand: { desc: "Recognized as an ADCOLOR FUTURE, chosen as part of the next generation of diverse leaders in the creative industries. Read more <a href=\"https://adcolor.org/adcolor-announces-2022-class-of-adcolor-futures-and-inaugural-class-of-adcolor-leaders/\" target=\"_blank\" rel=\"noopener\">here</a>." } },
-  { date: "Sep 2021", text: "Spotify: Aspiring Marketing Professionals Program", expand: { desc: "Completed Spotify's AMP program, a fifteen-month rotational track across Spotify's renowned global marketing org, as one of three selected participants. Rotations included brand and creative, experiential marketing, and partner marketing." } },
+  { date: "Aug 2022", text: "ADCOLOR FUTURE", expand: { desc: "Recognized as an ADCOLOR FUTURE, part of the next generation of diverse leaders in the creative industries. Read more <a href=\"https://adcolor.org/adcolor-announces-2022-class-of-adcolor-futures-and-inaugural-class-of-adcolor-leaders/\" target=\"_blank\" rel=\"noopener\">here</a>." } },
+  { date: "Sep 2021", text: "Spotify: Aspiring Marketing Professionals Program", expand: { desc: "Completed Spotify's AMP program, a fifteen-month rotational track, as one of three selected participants. Rotations included brand and creative, experiential marketing, and partner marketing." } },
   { date: "Oct 2018", text: "Vota Conmigo", expand: { desc: "Univision's nationwide get-out-the-vote campaign for Hispanic America, featuring Jorge Ramos. Read more <a href=\"https://corporate.televisaunivision.com/press/press-releases/2018/10/23/univision-launches-vota-conmigo-initiative-to-empower-hispanic-america/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: { type: "embed", src: "https://drive.google.com/file/d/1bUFOkChSwb6pUKQbs3OU-HCiY8SzbcxP/preview" } } },
-  { date: "Aug 2018", text: "The Academy of Motion Picture Arts and Sciences: Gold Rising", expand: { desc: "Completed Gold Rising, an eight-week program from the Academy of Motion Picture Arts and Sciences pairing participants with film industry leaders and Academy member mentors. Read more <a href=\"https://www.oscars.org/news/academy-gold-enters-second-year-22-entertainment-industry-partners\" target=\"_blank\" rel=\"noopener\">here</a>.", media: { type: "image", src: "https://lh3.googleusercontent.com/d/1VYHKKynrappEY68Fap6zNHf-IqUgiqH1=s0" } } },
+  { date: "Aug 2018", text: "The Academy of Motion Picture Arts and Sciences: Gold Rising", expand: { desc: "Completed Gold Rising, an eight-week program from the Academy that pairs participants with film industry leaders and Academy member mentors. Read more <a href=\"https://www.oscars.org/news/academy-gold-enters-second-year-22-entertainment-industry-partners\" target=\"_blank\" rel=\"noopener\">here</a>.", media: { type: "image", src: "https://lh3.googleusercontent.com/d/1VYHKKynrappEY68Fap6zNHf-IqUgiqH1=s0" } } },
 ];
 
 function buildMediaEl(m){
@@ -595,10 +605,19 @@ function renderLog(){
               // off by the rotation's own transform origin.
               if (m.center) {
                 img.style.left = "50%";
+                img.dataset.side = "center";
                 img.style.transform = `translateX(-50%) rotate(${m.rotate ?? -10}deg)`;
               } else {
                 img.style.transform = `rotate(${m.rotate ?? -10}deg)`;
-                if (m.left != null) img.style.left = m.left; else if (m.right != null) img.style.right = m.right; else img.style.right = "18px";
+                // Tag which side this sticker is actually pinned to so the
+                // mobile media query (see .sticker[data-side=...] rules) can
+                // scale down the correct offset without also setting the
+                // *other* side — setting both left and right on the same
+                // absolutely-positioned element is an over-constrained case
+                // browsers resolve by silently ignoring one of them.
+                if (m.left != null) { img.style.left = m.left; img.dataset.side = "left"; }
+                else if (m.right != null) { img.style.right = m.right; img.dataset.side = "right"; }
+                else { img.style.right = "18px"; img.dataset.side = "right"; }
               }
               if (m.top != null) img.style.top = m.top; else if (m.bottom != null) img.style.bottom = m.bottom; else img.style.bottom = "-26px";
               lastEl.appendChild(img);
