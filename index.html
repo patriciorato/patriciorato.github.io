@@ -25,9 +25,40 @@
     line-height:1.45;
     text-transform:lowercase;
     -webkit-font-smoothing:antialiased;
+    position:relative;
   }
   a{color:var(--ink);}
   a:hover{color:var(--hover);}
+
+  /* faint paper grain — decorative only, sits above bg, below content */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+    opacity:0.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* soft accent glow that trails the cursor — very low opacity, purely ambient */
+  .cursor-glow{
+    position:fixed;
+    top:0;
+    left:0;
+    width:420px;
+    height:420px;
+    margin:-210px 0 0 -210px;
+    border-radius:50%;
+    background:radial-gradient(circle, var(--hover) 0%, transparent 70%);
+    opacity:0;
+    filter:blur(10px);
+    pointer-events:none;
+    z-index:0;
+    transition:opacity 0.4s ease;
+    will-change:transform;
+  }
+  .wrap{position:relative;z-index:1;}
 
   .wrap{
     max-width:900px;
@@ -94,6 +125,14 @@
   .entry.clickable:hover .headline{
     color:var(--hover);
   }
+  /* default browser focus rings vary a lot in how ugly they are — this
+     gives keyboard users (tabbing through entries) a consistent, on-brand
+     focus indicator instead of whatever the browser default looks like. */
+  .entry.clickable:focus-visible{
+    outline:2px solid var(--hover);
+    outline-offset:2px;
+    border-radius:2px;
+  }
   .entry .date{
     flex:0 0 92px;
     color:var(--muted);
@@ -114,25 +153,71 @@
     max-height:0;
     overflow:hidden;
     transition:max-height 0.3s ease;
-    margin-left:102px;
-    padding-left:10px;
+    margin-left:92px;
   }
+  /* .entry has its own 14px bottom padding (spacing between log rows
+     regardless of whether they're expandable), which sits directly above
+     this panel and was making the headline-to-copy gap read much bigger
+     than the tight media-to-media rhythm even after panel-inner's own
+     padding-top got shrunk. Pull the panel up to eat most of that reserved
+     whitespace instead of touching .entry's padding (which still needs to
+     keep rows apart from each other in the collapsed list).
+     IMPORTANT: this only applies while the entry is open (.entry.open + .panel)
+     — a bare ".panel{margin-top:-7px}" would apply unconditionally to every
+     expandable entry's panel regardless of open/closed state, quietly
+     shrinking the gap between every row in the collapsed list by 7px as an
+     unintended side effect (found during code review, fixed here). */
+  .entry.open + .panel{
+    margin-top:-7px;
+  }
+  /* Once a panel has finished opening, JS swaps overflow to visible so
+     stickers (see .sticker) can bleed past the panel's own box into the
+     surrounding white space. overflow-x:visible + overflow-y:hidden doesn't
+     work here — per spec, browsers coerce that combo to overflow-x:auto,
+     which still clips. So we flip the whole property after the open
+     transition ends instead (back to plain "hidden" the instant it starts
+     closing, so the collapse animation still clips normally). */
   .panel-inner{
-    padding-top:2px;
-    padding-bottom:22px;
+    padding-top:0px;
+    padding-bottom:8px;
     font-size:14px;
     color:var(--desc);
   }
-  .panel-inner p{margin:0 0 10px;}
-  .panel-inner a{text-decoration:underline;}
+  .panel-inner p{margin:0 0 6px;max-width:624px;}
+  .panel-inner a{text-decoration:underline;transition:color 0.2s ease;}
+  /* whatever the last thing in the panel is (text or media), don't let it
+     add its own trailing margin on top of panel-inner's bottom padding —
+     keeps the gap before the next entry the same size everywhere */
+  .panel-inner > *:last-child{margin-bottom:0;}
   .media-item{
     width:100%;
-    max-width:520px;
-    margin-top:8px;
+    max-width:624px;
+    margin-top:5px;
     border-radius:2px;
   }
   .media-item + .media-item{
-    margin-top:12px;
+    margin-top:7px;
+  }
+  /* a "row" is two (or more) media items placed side by side instead of
+     stacked — used when the ENTRIES media array has a nested array */
+  .media-row{
+    display:flex;
+    gap:10px;
+    width:100%;
+    max-width:624px;
+    margin-top:5px;
+  }
+  .media-item + .media-row,
+  .media-row + .media-item,
+  .media-row + .media-row{
+    margin-top:7px;
+  }
+  .media-row .media-item{
+    width:auto;
+    max-width:none;
+    flex:1 1 0;
+    min-width:0;
+    margin-top:0;
   }
   .media-item--box{
     background:var(--media-bg);
@@ -145,6 +230,13 @@
     letter-spacing:0.5px;
     text-transform:uppercase;
     overflow:hidden;
+  }
+  /* Text-only placeholder (no video/iframe inside) — align its label to
+     the left so it lines up with the description text above it, instead
+     of floating dead-center in the box. */
+  .media-item--box.media-item--label{
+    justify-content:flex-start;
+    padding-left:16px;
   }
   .media-item--box iframe,
   .media-item--box video{
@@ -159,10 +251,74 @@
     display:block;
     border-radius:2px;
   }
+  /* Shown only if the image fails to load (e.g. blocked network in a
+     preview sandbox) so there's still a visible placeholder box instead
+     of nothing. Never shows on the real site once the photo loads fine. */
+  .media-item--photo.media-item--fallback{
+    background:var(--media-bg);
+    color:var(--media-fg);
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    padding-left:16px;
+    aspect-ratio:16/9;
+    font-size:13px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+  }
+
+  /* fruit-sticker-style overlay — pinned to the seam between two stacked
+     media items, tilted and hanging slightly past the edge so it reads as
+     slapped on top rather than laid out in the grid. See "sticker" media
+     type in the ENTRIES docs above buildMediaEl(). */
+  .sticker{
+    position:absolute;
+    z-index:5;
+    pointer-events:none;
+    filter:drop-shadow(0 3px 6px rgba(0,0,0,0.3));
+  }
+
+  /* Touch devices have no :hover, so tapping something that would
+     otherwise turn blue on hover (entries, social icons, "read more"
+     links) needs its own acknowledgment — a brief blue flash that fades
+     back to normal, added/removed via JS (see the click listener near the
+     bottom of the script). Scoped to (hover:none) so mouse users keep
+     relying on the existing :hover rules untouched. */
+  @media (hover:none){
+    .tap-flash{
+      color:var(--hover) !important;
+    }
+  }
 
   @media (max-width:560px){
-    .entry .date{flex-basis:68px;}
-    .panel{margin-left:78px;}
+    /* pgLang-style stacked layout — date on its own line above the
+       headline instead of a side-by-side date column, which gets cramped
+       on narrow screens. Panel no longer needs to indent to line up with
+       a date column since there isn't one anymore. */
+    .entry{
+      flex-direction:column;
+      align-items:flex-start;
+      gap:2px;
+    }
+    .entry .date{
+      flex:0 0 auto;
+      padding-top:0;
+    }
+    .panel{margin-left:0;}
+    /* smaller viewports leave no horizontal slack next to media items, so
+       shrink the sticker and pull its overhang back in proportionally to
+       avoid it getting clipped by .panel's overflow:hidden */
+    .sticker{width:56px !important;right:-30px !important;bottom:-31px !important;}
+  }
+
+  /* little easter egg — animated gif next to the word "claude" */
+  .claude-icon{
+    display:inline-block;
+    width:16px;
+    height:16px;
+    vertical-align:-3px;
+    margin:0 2px;
+    border-radius:2px;
   }
 </style>
 </head>
@@ -210,6 +366,21 @@
                        4) { type: "embed", src: "https://www.youtube.com/embed/VIDEO_ID" }
                           → for anything already hosted elsewhere (YouTube,
                             Vimeo, etc). Use the platform's official embed URL.
+                       5) { type: "sticker", src: "...", rotate: -10, size: 84,
+                            bottom: "-26px", right: "18px" }
+                          → decorative only, not a real media item. Pins the
+                            image to the BOTTOM-RIGHT corner of the item
+                            right before it in the array, tilted, hanging
+                            over the seam into whatever comes next. Must be
+                            followed by another item below it (image/video/
+                            embed/placeholder) so the overhang lands on
+                            something and never gets clipped at the very
+                            bottom of the panel. Use `left` instead of
+                            `right` to pin the other side; `top` instead of
+                            `bottom` to hang it off the top edge instead.
+                            Use `center: true` instead of `left`/`right` to
+                            straddle the horizontal middle of the seam
+                            instead of a corner.
                        Multiple items for one entry? Use an array of the
                        objects above, e.g. [ {type:"image",...}, {type:"embed",...} ]
                        — they'll stack in order.
@@ -225,24 +396,66 @@
 const LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
 
 const ENTRIES = [
-  { date: "Jul 2026", text: "Spotify: Fan Life 2026", expand: { desc: LOREM, media: "Image / video" } },
+  { date: "Aug 2026", text: "this website", expand: { desc: "Vibe coded this website start to finish with Claude <img class='claude-icon' src='https://lh3.googleusercontent.com/d/1PdVQAO5Y9XR07OelCi36wnN_zPrn1LiT=s0' alt=''>" } },
+  { date: "Jul 2026", text: "Fan Life 2026", expand: { desc: "Coming soon." } },
   { date: "Mar 2026", text: "Lunch Time: A Photo Essay", expand: { media: [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1gY_EK7Uo-Cv-vkKTeVMmrW09cZfsPzpB=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1c31GFR_7IM3Ap_HCBLmBKnDNvj0tYcNM=s0" },
     { type: "embed", src: "https://drive.google.com/file/d/1pzo8n9uCf2W2_vnHkdCeu2EnUhG-Kan2/preview" },
   ] } },
-  { date: "Dec 2025", text: "Spotify: 2025 Wrapped", expand: { desc: LOREM, media: "Image / video" } },
-  { date: "Aug 2025", text: "Spotify: Fan Life 2025", expand: { desc: "Spotify's global tentpole campaign highlighting fandom rituals, with real fans captured across film and photography, spotlighting the fandoms of Bad Bunny, Charli xcx, Lil Uzi Vert, Rezz, Sleep Token, Megan Moroney, and Pitbull. Read more <a href=\"https://newsroom.spotify.com/2025-08-26/fan-life-global-campaign-returns/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+  { date: "Dec 2025", text: "2025 Spotify Wrapped", expand: { desc: LOREM, media: [
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1w_A7mR4Bm95w0XPCEVfe9KJfETeuRsyV=s0" },
+    [
+      { type: "image", src: "https://lh3.googleusercontent.com/d/1UrgTTG20YdfuPpqfNRK5u_jbF6RbOmRj=s0" },
+      { type: "image", src: "https://lh3.googleusercontent.com/d/1zEk6OGxOS8zDCJjCOhytqeFmyZRLw5Dj=s0" },
+      { type: "image", src: "https://lh3.googleusercontent.com/d/1p3B9a_YF14qXAsxR1msvoegd-WpKJYEl=s0" },
+      { type: "image", src: "https://lh3.googleusercontent.com/d/1MN8ilEuJPsKP51MXcw1wXj3YLjvQcE9M=s0" },
+    ],
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1YBTZM80CAwTMPnaaNGjHtvm0pt4nTnIq=s0" },
+    { type: "embed", src: "https://drive.google.com/file/d/1Tuz5JrGmm03u2JovFIrXHnsjya_Stnig/preview" },
+    [
+      { type: "image", src: "https://lh3.googleusercontent.com/d/1YbKCeRq_MjeSrDijSt5FMzO3iAI3pyko=s0" },
+      { type: "image", src: "https://lh3.googleusercontent.com/d/1J-3QQJu9k_Qo7BBiTVnHDaMR2d-rDUZg=s0" },
+      { type: "image", src: "https://lh3.googleusercontent.com/d/1M6JNhByCvCbKI2G21SvD8QgpVMgirA9j=s0" },
+    ],
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1lz53ip2_eyBTf-_YIrdmvbXrAEBNDNH6=s0" },
+  ] } },
+  { date: "Aug 2025", text: "Fan Life 2025", expand: { desc: "Spotify's global brand tentpole campaign highlighting fandom rituals, and featuring real fans across film and photography. This run spotlights the fandoms of Bad Bunny, Charli xcx, Lil Uzi Vert, Rezz, Sleep Token, Megan Moroney, and Pitbull. Read more <a href=\"https://newsroom.spotify.com/2025-08-26/fan-life-global-campaign-returns/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+    { type: "embed", src: "https://drive.google.com/file/d/1uhSWl_INsEIwtZYSEZjwHYfKoTxsoVJ8/preview" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1clyhoomBfDEE1xhQ8w63lQh1PONhdTg7=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1X-o1vxZ6dRC5K9WkH9o-oTauJjhNcUWB=s0" },
-    { type: "embed", src: "https://drive.google.com/file/d/1uhSWl_INsEIwtZYSEZjwHYfKoTxsoVJ8/preview" },
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1tpCfkASM-wm3iP27ssGJNu8MahI7Y8Jq=s1600" },
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1yRiYiPgDMtCPUeJnISJyaAKSSe9Avk9g=s1600" },
   ] } },
-  { date: "Jan 2025", text: "Spotify: Bad Bunny DeBÍ TiRAR MáS FOToS", expand: { desc: LOREM, media: "Image / video" } },
-  { date: "Dec 2024", text: "Spotify: 2024 Wrapped", expand: { desc: LOREM, media: "Image / video" } },
-  { date: "Aug 2022", text: "ADCOLOR FUTURE", expand: { desc: LOREM, media: "Image / video" } },
-  { date: "Sep 2021", text: "Spotify: Aspiring Marketing Professionals Program", expand: { desc: LOREM, media: "Image / video" } },
-  { date: "Oct 2018", text: "Univision: Vota Conmigo", expand: { desc: LOREM, media: "Image / video" } },
-  { date: "Aug 2018", text: "The Academy of Motion Picture Arts and Sciences: Gold Rising", expand: { desc: LOREM, media: "Image / video" } },
+  { date: "Jan 2025", text: "Bad Bunny DeBÍ TiRAR MáS FOToS", expand: { desc: [
+    "Tracking Bad Bunny: Cannes Lions and Clio award-winning global treasure hunt tracklist reveal campaign for Benito's sixth solo studio album, Debí Tirar Más Fotos. A partnership between Rimas, Spotify, and Google Maps. Read more <a href=\"https://www.adsoftheworld.com/campaigns/tracking-bad-bunny-case-study\" target=\"_blank\" rel=\"noopener\">here</a>, <a href=\"https://clios.com/winners-gallery/details/206722\" target=\"_blank\" rel=\"noopener\">here</a>, and <a href=\"https://www.adweek.com/creativity/bad-bunnys-love-letter-to-puerto-rico-earns-his-label-a-cannes-lions-grand-prix/\" target=\"_blank\" rel=\"noopener\">here</a>.",
+    "El torneo de dominó: Spotify's album-launch fan activation. A domino tournament in partnership with the Federación de Dominó de Puerto Rico, featuring a performance from Bad Bunny. Read more <a href=\"https://www.playgroundweb.com/news/debi-tirar-mas-fotos-el-torneo-de-domino-40258\" target=\"_blank\" rel=\"noopener\">here</a>.",
+  ], media: [
+    { type: "embed", src: "https://drive.google.com/file/d/1YAVMheVF8WcZMQzX7wXujTXCqBF0Pf-o/preview" },
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1mEJykn31wXfPRxEJOUVkxu31gosNdzH-=s0" },
+    { type: "sticker", src: "https://lh3.googleusercontent.com/d/18cq-ckU2ADVTDnMOlBqRlRyOhBxiTocc=s0", rotate: -18, size: 145, bottom: "-92px", right: "-90px" },
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1GZXU0gae9729SWwUNrAeUE0PJKF2ucAG=s0" },
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1SL4WbTOs6kXTfIxx0DWKFpvLOwhEWL3T=s1600" },
+    { type: "sticker", src: "https://lh3.googleusercontent.com/d/1zyUnF0tWksLct_BEucMiCq3ExbAXpLrW=s0", rotate: 18, size: 145, left: "-95px", bottom: "-15px" },
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1vNfTqQVe_3jsnZMVenfNKZ2Xb40QgdRM=s1600" },
+  ] } },
+  { date: "Dec 2024", text: "2024 Spotify Wrapped", expand: { desc: "Spotify's annual Wrapped campaign, marking its tenth year in 2024, spotlighting the year's top listening moments and celebrating the fans, artists, and creators behind a record-breaking year. Read more <a href=\"https://newsroom.spotify.com/2024-wrapped/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1KqkYZZWX3pmuwvRYDN5OtNSq-IqPBkZA=s0" },
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1gCvEgAdKe9hVQgAyorvcCeb_Y7n26soa=s0" },
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1QmyWLN_m6wXqxpcKP5gR1HmD-rcqs6CY=s0" },
+    [
+      { type: "image", src: "https://lh3.googleusercontent.com/d/1qShaLcoW8ItgT2EO1ZrmEcTtUBvr-8yB=s0" },
+      { type: "image", src: "https://lh3.googleusercontent.com/d/1srt-byjhBqtsYxFN71Qbmi7zXfnbBZ5a=s0" },
+    ],
+    [
+      { type: "image", src: "https://lh3.googleusercontent.com/d/1r5mkioCgA8iWnSuEaKnS9eVGtun-SMRY=s0" },
+      { type: "image", src: "https://lh3.googleusercontent.com/d/1Q8xYQ219v8p_Dc4tjEQkj9_L7UMfFcQE=s0" },
+    ],
+  ] } },
+  { date: "Aug 2022", text: "ADCOLOR FUTURE", expand: { desc: "Recognized as an ADCOLOR FUTURE, chosen as part of the next generation of diverse leaders in the creative industries. Read more <a href=\"https://adcolor.org/adcolor-announces-2022-class-of-adcolor-futures-and-inaugural-class-of-adcolor-leaders/\" target=\"_blank\" rel=\"noopener\">here</a>." } },
+  { date: "Sep 2021", text: "Spotify: Aspiring Marketing Professionals Program", expand: { desc: "Completed Spotify's AMP program, a fifteen-month rotational track across Spotify's renowned global marketing org, as one of three selected participants. Rotations included brand and creative, experiential marketing, and partner marketing." } },
+  { date: "Oct 2018", text: "Vota Conmigo", expand: { desc: "Univision's nationwide get-out-the-vote campaign for Hispanic America, featuring Jorge Ramos. Read more <a href=\"https://corporate.televisaunivision.com/press/press-releases/2018/10/23/univision-launches-vota-conmigo-initiative-to-empower-hispanic-america/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: { type: "embed", src: "https://drive.google.com/file/d/1bUFOkChSwb6pUKQbs3OU-HCiY8SzbcxP/preview" } } },
+  { date: "Aug 2018", text: "The Academy of Motion Picture Arts and Sciences: Gold Rising", expand: { desc: "Completed Gold Rising, an eight-week program from the Academy of Motion Picture Arts and Sciences pairing participants with film industry leaders and Academy member mentors. Read more <a href=\"https://www.oscars.org/news/academy-gold-enters-second-year-22-entertainment-industry-partners\" target=\"_blank\" rel=\"noopener\">here</a>.", media: { type: "image", src: "https://lh3.googleusercontent.com/d/1VYHKKynrappEY68Fap6zNHf-IqUgiqH1=s0" } } },
 ];
 
 function buildMediaEl(m){
@@ -254,6 +467,13 @@ function buildMediaEl(m){
     const img = document.createElement("img");
     img.src = m.src;
     img.alt = m.alt || "";
+    img.onerror = () => {
+      // Image couldn't load (blocked network, dead link, etc) — fall back
+      // to a visible placeholder box instead of silently showing nothing.
+      img.remove();
+      wrap.classList.add("media-item--fallback");
+      wrap.textContent = "placeholder media";
+    };
     wrap.appendChild(img);
     return wrap;
   }
@@ -265,6 +485,7 @@ function buildMediaEl(m){
 
   if (typeof m === "string") {
     // Plain label = placeholder, nothing uploaded yet.
+    box.classList.add("media-item--label");
     box.textContent = m;
   } else if (m.type === "video") {
     const video = document.createElement("video");
@@ -274,7 +495,13 @@ function buildMediaEl(m){
   } else if (m.type === "embed") {
     const iframe = document.createElement("iframe");
     iframe.src = m.src;
-    iframe.loading = "lazy";
+    // NOTE: deliberately no loading="lazy" here. These iframes are already
+    // built lazily (only on first click, see mediaBuilt above), so native
+    // lazy-loading is redundant — and on mobile Safari it can misjudge
+    // whether the iframe is "in viewport" while its parent .panel is still
+    // mid max-height transition from a collapsed (0-height) state, which
+    // was causing Drive's embedded player to render half-initialized
+    // (just a bare scrubber, no thumbnail/play button) on phones.
     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
     iframe.allowFullscreen = true;
     box.appendChild(iframe);
@@ -290,6 +517,16 @@ function renderLog(){
     const hasExpand = !!item.expand;
     const row = document.createElement("div");
     row.className = "entry" + (hasExpand ? " clickable" : "");
+    // Plain clickable divs are invisible to keyboards and screen readers —
+    // no way to focus them, no indication they're interactive, no way to
+    // "click" via Enter/Space. tabindex makes it focusable, role="button"
+    // announces it as interactive, aria-expanded (kept in sync in the click
+    // handler below) reports open/closed state.
+    if (hasExpand) {
+      row.tabIndex = 0;
+      row.setAttribute("role", "button");
+      row.setAttribute("aria-expanded", "false");
+    }
 
     const date = document.createElement("div");
     date.className = "date";
@@ -311,7 +548,15 @@ function renderLog(){
       inner.className = "panel-inner";
 
       let html = "";
-      if (item.expand.desc) html += `<p>${item.expand.desc}</p>`;
+      // desc can be a single string (one paragraph) or an array of strings
+      // (multiple paragraphs) — arrays render as separate <p> tags so the
+      // gap between them uses the same margin as every other paragraph
+      // break on the site, instead of a manual <br><br> (which just stacks
+      // two blank line-heights and reads as a much bigger gap).
+      if (item.expand.desc) {
+        const paras = Array.isArray(item.expand.desc) ? item.expand.desc : [item.expand.desc];
+        html += paras.map(p => `<p>${p}</p>`).join("");
+      }
       if (item.expand.link) html += `<p><a href="${item.expand.link.href}">${item.expand.link.label}</a></p>`;
       inner.innerHTML = html;
 
@@ -320,7 +565,7 @@ function renderLog(){
 
       let mediaBuilt = false;
 
-      row.addEventListener("click", () => {
+      const toggleEntry = () => {
         const opening = !row.classList.contains("open");
 
         // Build the media (images/video/iframes) the first time this entry
@@ -329,18 +574,219 @@ function renderLog(){
         // ever clicks them.
         if (opening && !mediaBuilt && item.expand.media) {
           const items = Array.isArray(item.expand.media) ? item.expand.media : [item.expand.media];
-          items.forEach(m => inner.appendChild(buildMediaEl(m)));
+          let lastEl = null;
+
+          items.forEach(m => {
+            // Stickers aren't a stacked media item — they pin to the corner
+            // of whatever media item came right before them, so they need
+            // that item's wrapper to be position:relative and get appended
+            // *inside* it instead of as their own sibling in the stack.
+            if (typeof m === "object" && m.type === "sticker") {
+              if (!lastEl) return; // nothing to pin to, skip
+              lastEl.style.position = "relative";
+              const img = document.createElement("img");
+              img.src = m.src;
+              img.alt = "";
+              img.className = "sticker";
+              img.style.width = (m.size || 84) + "px";
+              // `center: true` pins it to the horizontal middle of the item
+              // above it instead of a left/right corner — needs the rotate
+              // combined with translateX(-50%) so the centering isn't thrown
+              // off by the rotation's own transform origin.
+              if (m.center) {
+                img.style.left = "50%";
+                img.style.transform = `translateX(-50%) rotate(${m.rotate ?? -10}deg)`;
+              } else {
+                img.style.transform = `rotate(${m.rotate ?? -10}deg)`;
+                if (m.left != null) img.style.left = m.left; else if (m.right != null) img.style.right = m.right; else img.style.right = "18px";
+              }
+              if (m.top != null) img.style.top = m.top; else if (m.bottom != null) img.style.bottom = m.bottom; else img.style.bottom = "-26px";
+              lastEl.appendChild(img);
+              return;
+            }
+
+            // Photos/videos/embeds can change size once they actually finish
+            // loading (or fail to load), which happens *after* we've already
+            // measured and set the panel's height below. Without this, the
+            // panel clips or leaves a gap until it's closed and reopened.
+            // Re-measure whenever the tag inside finishes loading/erroring,
+            // but only while this panel is still open.
+            const attachRecalc = (el) => {
+              const tag = el.querySelector("img, video, iframe");
+              if (!tag) return;
+              const recalc = () => {
+                if (row.classList.contains("open")) {
+                  // scrollHeight only reflects true content height while
+                  // overflow is "hidden" — once we've flipped it to
+                  // "visible" (post open-transition, so stickers can bleed)
+                  // scrollHeight just parrots the current box height and
+                  // this measurement would silently no-op. Force "hidden"
+                  // for the measurement, then put back whatever it was.
+                  const prevOverflow = panel.style.overflow;
+                  panel.style.overflow = "hidden";
+                  panel.style.maxHeight = panel.scrollHeight + "px";
+                  panel.style.overflow = prevOverflow;
+                }
+              };
+              tag.addEventListener("load", recalc);
+              tag.addEventListener("loadedmetadata", recalc);
+              tag.addEventListener("error", recalc);
+            };
+
+            // Sizes a row's items by their real aspect ratio instead of
+            // splitting the width evenly — so a square photo and a 4:5
+            // photo end up the SAME HEIGHT (no cropping, no gap under the
+            // shorter one) instead of each just taking 50% width and
+            // whichever is narrower leaving empty space below it.
+            const equalizeRow = (rowEl, entries) => {
+              const GAP = 10;
+              const ratios = new Array(entries.length).fill(null);
+
+              const apply = () => {
+                if (ratios.some(r => r == null)) return;
+                const rowWidth = rowEl.clientWidth || 624;
+                const available = rowWidth - GAP * (entries.length - 1);
+                const sumRatios = ratios.reduce((a, b) => a + b, 0);
+                const targetH = available / sumRatios;
+                entries.forEach((item, i) => {
+                  item.style.flex = "none";
+                  item.style.width = (targetH * ratios[i]) + "px";
+                });
+              };
+
+              entries.forEach((item, i) => {
+                const img = item.querySelector("img");
+                if (!img) { ratios[i] = 16 / 9; apply(); return; } // video/embed box is a fixed 16:9
+                if (img.complete && img.naturalWidth) {
+                  ratios[i] = img.naturalWidth / img.naturalHeight;
+                  apply();
+                } else {
+                  img.addEventListener("load", () => { ratios[i] = (img.naturalWidth / img.naturalHeight) || 16 / 9; apply(); });
+                  img.addEventListener("error", () => { ratios[i] = 16 / 9; apply(); });
+                }
+              });
+
+              window.addEventListener("resize", apply);
+            };
+
+            // A nested array = a row of items placed side by side instead
+            // of stacked full-width, e.g. [ {..}, {..} ] pairs two items up.
+            if (Array.isArray(m)) {
+              const mediaRow = document.createElement("div");
+              mediaRow.className = "media-row";
+              let rowLastEl = null;
+              const rowItems = [];
+              m.forEach(sub => {
+                const subEl = buildMediaEl(sub);
+                mediaRow.appendChild(subEl);
+                attachRecalc(subEl);
+                rowItems.push(subEl);
+                rowLastEl = subEl;
+              });
+              inner.appendChild(mediaRow);
+              equalizeRow(mediaRow, rowItems);
+              lastEl = rowLastEl;
+              return;
+            }
+
+            const el = buildMediaEl(m);
+            inner.appendChild(el);
+            lastEl = el;
+            attachRecalc(el);
+          });
           mediaBuilt = true;
         }
 
         row.classList.toggle("open", opening);
-        panel.style.maxHeight = opening ? panel.scrollHeight + "px" : "0px";
+        row.setAttribute("aria-expanded", String(opening));
+
+        if (opening) {
+          // Keep clipping (overflow:hidden) for the duration of the open
+          // transition so it animates as a clean reveal, then switch to
+          // visible once it settles so any sticker's overhang can bleed
+          // past the panel's box into the white space around it.
+          panel.style.overflow = "hidden";
+          panel.style.maxHeight = panel.scrollHeight + "px";
+
+          // Restore any iframe embed that was blanked out on a previous
+          // close (see below) — reassigning src reloads the Drive player
+          // from scratch, so reopening always starts the video over.
+          inner.querySelectorAll("iframe").forEach(f => {
+            if (!f.getAttribute("src") && f.dataset.src) f.setAttribute("src", f.dataset.src);
+          });
+        } else {
+          // Closing: clip immediately (before the transition starts) so
+          // the collapse animates shut instead of letting bled content
+          // hang around uncontained while the height shrinks.
+          panel.style.overflow = "hidden";
+          panel.style.maxHeight = "0px";
+
+          // Someone collapsing the entry means they're done with it —
+          // don't let audio/video keep playing out of sight. <video> can
+          // just be paused and rewound. Drive's <iframe> embed has no
+          // postMessage API we can pause remotely, so the only way to
+          // actually kill playback is to blank its src (stashing the real
+          // one on the element first so the "opening" branch above can
+          // put it back next time this entry is opened).
+          inner.querySelectorAll("video").forEach(v => {
+            v.pause();
+            v.currentTime = 0;
+          });
+          inner.querySelectorAll("iframe").forEach(f => {
+            const src = f.getAttribute("src");
+            if (src) {
+              f.dataset.src = src;
+              f.removeAttribute("src");
+            }
+          });
+        }
+      };
+
+      row.addEventListener("click", toggleEntry);
+      // Keyboard equivalent of a click — role="button" tells assistive tech
+      // this is interactive, but browsers don't auto-wire Enter/Space to
+      // fire click on non-native-button elements, so it has to be done by
+      // hand. preventDefault on Space stops the page from scrolling.
+      row.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleEntry();
+        }
+      });
+
+      panel.addEventListener("transitionend", (e) => {
+        if (e.propertyName === "max-height" && row.classList.contains("open")) {
+          panel.style.overflow = "visible";
+        }
       });
     }
   });
 }
 
 renderLog();
+
+// Touch devices can't hover, so anything that would otherwise turn blue on
+// :hover (entry rows, social icons, "read more" links) gets a brief blue
+// flash on tap instead — acknowledges the tap registered, then fades back
+// to normal. The .tap-flash class itself only has a visible effect under
+// @media (hover:none) (see CSS above), so this is a no-op on desktop.
+document.addEventListener("click", (e) => {
+  const targets = [];
+  const entry = e.target.closest(".entry.clickable");
+  if (entry) {
+    const d = entry.querySelector(".date");
+    const h = entry.querySelector(".headline");
+    if (d) targets.push(d);
+    if (h) targets.push(h);
+  }
+  const link = e.target.closest(".social a, .panel-inner a");
+  if (link) targets.push(link);
+
+  targets.forEach(el => {
+    el.classList.add("tap-flash");
+    setTimeout(() => el.classList.remove("tap-flash"), 300);
+  });
+});
 </script>
 </body>
 </html>
