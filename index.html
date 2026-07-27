@@ -318,7 +318,15 @@
        a much bigger sticker, and got pushed off-screen). */
     .sticker{width:56px !important;bottom:-31px !important;}
     .sticker[data-side="right"]{right:-30px !important;}
-    .sticker[data-side="left"]{left:-32px !important;}
+    /* .wrap has 24px of left padding at every viewport size, so the photo's
+       left edge already sits 24px in from the true edge of the page. Any
+       overhang bigger than that pushes the sticker past x:0 of the document
+       itself — space that can never be scrolled into (you can scroll right
+       to reveal right-side overflow, but there's no such thing as scrolling
+       left past the document's true left edge), so it gets permanently
+       clipped no matter how far the page is dragged. Keeping this comfortably
+       inside that 24px buffer instead of matching the right side 1:1. */
+    .sticker[data-side="left"]{left:-16px !important;}
   }
 
   /* little easter egg — animated gif next to the word "claude" */
@@ -406,7 +414,7 @@
 const LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
 
 const ENTRIES = [
-  { date: "Aug 2026", text: "this website", expand: { desc: "Vibe coded this website start to finish with Claude <img class='claude-icon' src='https://lh3.googleusercontent.com/d/1PdVQAO5Y9XR07OelCi36wnN_zPrn1LiT=s0' alt=''>" } },
+  { date: "Aug 2026", text: "this website", expand: { desc: "Vibe coded and launched this website with Claude <img class='claude-icon' src='https://lh3.googleusercontent.com/d/1PdVQAO5Y9XR07OelCi36wnN_zPrn1LiT=s0' alt=''>" } },
   { date: "Jul 2026", text: "Fan Life 2026", expand: { desc: "Coming soon." } },
   { date: "Mar 2026", text: "Lunch Time: A Photo Essay", expand: { media: [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1gY_EK7Uo-Cv-vkKTeVMmrW09cZfsPzpB=s0" },
@@ -422,7 +430,7 @@ const ENTRIES = [
       { type: "image", src: "https://lh3.googleusercontent.com/d/1kDdGNknfW9eZi3XsqC5ErB2vVKsGv1Ok=s0" },
     ],
     { type: "image", src: "https://lh3.googleusercontent.com/d/1YBTZM80CAwTMPnaaNGjHtvm0pt4nTnIq=s0" },
-    { type: "embed", src: "https://drive.google.com/file/d/1Tuz5JrGmm03u2JovFIrXHnsjya_Stnig/preview" },
+    { type: "embed", src: "https://www.youtube.com/embed/zh-eENOPDi0" },
     [
       { type: "image", src: "https://lh3.googleusercontent.com/d/1YbKCeRq_MjeSrDijSt5FMzO3iAI3pyko=s0" },
       { type: "image", src: "https://lh3.googleusercontent.com/d/1J-3QQJu9k_Qo7BBiTVnHDaMR2d-rDUZg=s0" },
@@ -441,7 +449,7 @@ const ENTRIES = [
     "Tracking Bad Bunny: Cannes Lions and Clio award-winning scavenger hunt tracklist reveal campaign for Benito's sixth album, Debí Tirar Más Fotos. A partnership between Rimas, Spotify, and Google Maps. Read more <a href=\"https://www.adsoftheworld.com/campaigns/tracking-bad-bunny-case-study\" target=\"_blank\" rel=\"noopener\">here</a>, <a href=\"https://clios.com/winners-gallery/details/206722\" target=\"_blank\" rel=\"noopener\">here</a>, and <a href=\"https://www.adweek.com/creativity/bad-bunnys-love-letter-to-puerto-rico-earns-his-label-a-cannes-lions-grand-prix/\" target=\"_blank\" rel=\"noopener\">here</a>.",
     "El torneo de dominó: Spotify's album-launch fan activation. A domino tournament with the Federación de Dominó de Puerto Rico, featuring a Bad Bunny performance. Read more <a href=\"https://www.playgroundweb.com/news/debi-tirar-mas-fotos-el-torneo-de-domino-40258\" target=\"_blank\" rel=\"noopener\">here</a>.",
   ], media: [
-    { type: "embed", src: "https://drive.google.com/file/d/1YAVMheVF8WcZMQzX7wXujTXCqBF0Pf-o/preview" },
+    { type: "embed", src: "https://www.youtube.com/embed/-3Aq3u6EJZ4" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1mEJykn31wXfPRxEJOUVkxu31gosNdzH-=s0" },
     { type: "sticker", src: "https://lh3.googleusercontent.com/d/18cq-ckU2ADVTDnMOlBqRlRyOhBxiTocc=s0", rotate: -18, size: 145, bottom: "-92px", right: "-90px" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1GZXU0gae9729SWwUNrAeUE0PJKF2ucAG=s0" },
@@ -462,6 +470,7 @@ const ENTRIES = [
       { type: "image", src: "https://lh3.googleusercontent.com/d/1Q8xYQ219v8p_Dc4tjEQkj9_L7UMfFcQE=s0" },
     ],
   ] } },
+  { date: "Aug 2024", text: "Sabrina Carpenter Short n' Sweet", expand: { desc: "Coming soon." } },
   { date: "Aug 2022", text: "ADCOLOR FUTURE", expand: { desc: "Recognized as an ADCOLOR FUTURE, part of the next generation of diverse leaders in the creative industries. Read more <a href=\"https://adcolor.org/adcolor-announces-2022-class-of-adcolor-futures-and-inaugural-class-of-adcolor-leaders/\" target=\"_blank\" rel=\"noopener\">here</a>." } },
   { date: "Sep 2021", text: "Spotify: Aspiring Marketing Professionals Program", expand: { desc: "Completed Spotify's AMP program, a fifteen-month rotational track, as one of three selected participants. Rotations included brand and creative, experiential marketing, and partner marketing." } },
   { date: "Oct 2018", text: "Vota Conmigo", expand: { desc: "Univision's nationwide get-out-the-vote campaign for Hispanic America, featuring Jorge Ramos. Read more <a href=\"https://corporate.televisaunivision.com/press/press-releases/2018/10/23/univision-launches-vota-conmigo-initiative-to-empower-hispanic-america/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: { type: "embed", src: "https://drive.google.com/file/d/1bUFOkChSwb6pUKQbs3OU-HCiY8SzbcxP/preview" } } },
