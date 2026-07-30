@@ -63,20 +63,31 @@
   .wrap{
     max-width:900px;
     margin:0 auto;
-    padding:24px 24px 80px;
+    padding:0 24px 80px;
   }
 
+  /* header used to live *inside* .wrap, so its background box was only ever
+     as wide as the 900px content column. Any sticker bleeding past that
+     column's edge (see .sticker — that's the whole point of it) landed in
+     space the header's background never covered, regardless of z-index —
+     no stacking fix can cover a box that was never painted there to begin
+     with. Fixed by moving <header> outside .wrap in the HTML so it spans
+     the full page width, with .header-inner holding the 900px column back
+     to line up with everything else. */
   header{
     position:sticky;
     top:0;
     background:var(--bg);
     z-index:10;
+    margin-bottom:6px;
+  }
+  .header-inner{
+    max-width:900px;
+    margin:0 auto;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding-top:20px;
-    padding-bottom:24px;
-    margin-bottom:6px;
+    padding:44px 24px 24px;
   }
   .logo{
     font-size:14px;
@@ -341,9 +352,8 @@
 </style>
 </head>
 <body>
-<div class="wrap">
-
-  <header>
+<header>
+  <div class="header-inner">
     <a class="logo" href="#top">patricio</a>
     <div class="social">
       <a href="https://www.instagram.com/patriciorato/" target="_blank" rel="noopener" aria-label="Instagram">
@@ -353,7 +363,9 @@
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1-.02 5 2.5 2.5 0 0 1 .02-5zM3 8.98h4v12.02H3V8.98zM9 8.98h3.8v1.64h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1v6.33h-4v-5.61c0-1.34-.02-3.06-1.87-3.06-1.87 0-2.16 1.46-2.16 2.96v5.71H9V8.98z"/></svg>
       </a>
     </div>
-  </header>
+  </div>
+</header>
+<div class="wrap">
 
   <div id="log" class="log"></div>
 
@@ -421,7 +433,7 @@ const ENTRIES = [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1c31GFR_7IM3Ap_HCBLmBKnDNvj0tYcNM=s0" },
     { type: "embed", src: "https://drive.google.com/file/d/1pzo8n9uCf2W2_vnHkdCeu2EnUhG-Kan2/preview" },
   ] } },
-  { date: "Dec 2025", text: "2025 Spotify Wrapped", expand: { desc: "Spotify's annual global Wrapped campaign, celebrating the year in listening. This year's initiative expands into real-world fan destinations and live performances, rallying points for top fans. Read more <a href=\"https://newsroom.spotify.com/2025-12-03/wrapped-marketing-campaign/\" target=\"_blank\" rel=\"noopener\">here</a>, <a href=\"https://newsroom.spotify.com/2025-12-16/wrapped-fan-destination-photos/\" target=\"_blank\" rel=\"noopener\">here</a>, and <a href=\"https://newsroom.spotify.com/2025-wrapped/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+  { date: "Dec 2025", text: "2025 Spotify Wrapped", expand: { desc: "Spotify's annual global Wrapped campaign, celebrating the year in listening. This run extends to fan destinations and live performances, rallying points for top fans. Read more <a href=\"https://newsroom.spotify.com/2025-12-03/wrapped-marketing-campaign/\" target=\"_blank\" rel=\"noopener\">here</a> and <a href=\"https://newsroom.spotify.com/2025-12-16/wrapped-fan-destination-photos/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1w_A7mR4Bm95w0XPCEVfe9KJfETeuRsyV=s0" },
     [
       { type: "image", src: "https://lh3.googleusercontent.com/d/1YzWu8LLqhrKN71SBtTk--OQ6T-kYYvLR=s0" },
@@ -438,16 +450,21 @@ const ENTRIES = [
     ],
     { type: "image", src: "https://lh3.googleusercontent.com/d/1lz53ip2_eyBTf-_YIrdmvbXrAEBNDNH6=s0" },
   ] } },
-  { date: "Aug 2025", text: "Fan Life 2025", expand: { desc: "Spotify's global brand tentpole campaign celebrating fandom rituals, and featuring real fans across film and photography. This run spotlights the fandoms of Bad Bunny, Charli xcx, Lil Uzi Vert, Rezz, Sleep Token, Megan Moroney, and Pitbull. Read more <a href=\"https://newsroom.spotify.com/2025-08-26/fan-life-global-campaign-returns/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+  { date: "Aug 2025", text: "Fan Life 2025", expand: { desc: "Spotify's global brand tentpole campaign celebrating real fans and fandom rituals. This run features Bad Bunny, Charli xcx, Lil Uzi Vert, Rezz, Sleep Token, Megan Moroney, and Pitbull. Read more <a href=\"https://newsroom.spotify.com/2025-08-26/fan-life-global-campaign-returns/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
     { type: "embed", src: "https://drive.google.com/file/d/1uhSWl_INsEIwtZYSEZjwHYfKoTxsoVJ8/preview" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1clyhoomBfDEE1xhQ8w63lQh1PONhdTg7=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1X-o1vxZ6dRC5K9WkH9o-oTauJjhNcUWB=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1tpCfkASM-wm3iP27ssGJNu8MahI7Y8Jq=s1600" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1yRiYiPgDMtCPUeJnISJyaAKSSe9Avk9g=s1600" },
   ] } },
+  { date: "Jul 2025", text: "KAROL G Tropicoqueta", expand: { desc: "Spotify's album-launch campaign for KAROL G's Tropicoqueta. Read more <a href=\"https://newsroom.spotify.com/2025-07-23/karol-g-and-spotify-bring-tropicoqueta-to-life-with-an-unforgettable-nyc-celebration/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+    { type: "embed", src: "https://www.youtube.com/embed/G-tVyXJVa9U" },
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1BEeiVVaSyFF9-kdFS6m-l_1HmS9wQPqU=s0" },
+  ] } },
   { date: "Jan 2025", text: "Bad Bunny DeBÍ TiRAR MáS FOToS", expand: { desc: [
-    "Tracking Bad Bunny: Cannes Lions and Clio award-winning scavenger hunt tracklist reveal campaign for Benito's sixth album, Debí Tirar Más Fotos. A partnership between Rimas, Spotify, and Google Maps. Read more <a href=\"https://www.adsoftheworld.com/campaigns/tracking-bad-bunny-case-study\" target=\"_blank\" rel=\"noopener\">here</a>, <a href=\"https://clios.com/winners-gallery/details/206722\" target=\"_blank\" rel=\"noopener\">here</a>, and <a href=\"https://www.adweek.com/creativity/bad-bunnys-love-letter-to-puerto-rico-earns-his-label-a-cannes-lions-grand-prix/\" target=\"_blank\" rel=\"noopener\">here</a>.",
-    "El torneo de dominó: Spotify's album-launch fan activation. A domino tournament with the Federación de Dominó de Puerto Rico, featuring a Bad Bunny performance. Read more <a href=\"https://www.playgroundweb.com/news/debi-tirar-mas-fotos-el-torneo-de-domino-40258\" target=\"_blank\" rel=\"noopener\">here</a>.",
+    "Spotify's album-launch campaign for Benito's Debí Tirar Más Fotos.",
+    "Tracking Bad Bunny: Cannes Lions and Clio-winning tracklist reveal scavenger hunt campaign in partnership with Rimas and Google Maps. Read more <a href=\"https://clios.com/winners-gallery/details/206722\" target=\"_blank\" rel=\"noopener\">here</a> and <a href=\"https://www.adweek.com/creativity/bad-bunnys-love-letter-to-puerto-rico-earns-his-label-a-cannes-lions-grand-prix/\" target=\"_blank\" rel=\"noopener\">here</a>.",
+    "El torneo de dominó: fan activation with the Federación de Dominó de Puerto Rico, featuring a Bad Bunny performance. Read more <a href=\"https://www.playgroundweb.com/news/debi-tirar-mas-fotos-el-torneo-de-domino-40258\" target=\"_blank\" rel=\"noopener\">here</a>.",
   ], media: [
     { type: "embed", src: "https://www.youtube.com/embed/-3Aq3u6EJZ4" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1mEJykn31wXfPRxEJOUVkxu31gosNdzH-=s0" },
@@ -455,9 +472,9 @@ const ENTRIES = [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1GZXU0gae9729SWwUNrAeUE0PJKF2ucAG=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1SL4WbTOs6kXTfIxx0DWKFpvLOwhEWL3T=s1600" },
     { type: "sticker", src: "https://lh3.googleusercontent.com/d/1zyUnF0tWksLct_BEucMiCq3ExbAXpLrW=s0", rotate: 18, size: 145, left: "-95px", bottom: "-15px" },
-    { type: "image", src: "https://lh3.googleusercontent.com/d/1vNfTqQVe_3jsnZMVenfNKZ2Xb40QgdRM=s1600" },
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1MSnGc7Sc5t1UaMfSdu8qhjOKmAVSI0Vn=s0" },
   ] } },
-  { date: "Dec 2024", text: "2024 Spotify Wrapped", expand: { desc: "Spotify's annual global Wrapped campaign, marking its tenth year, spotlighting the year's top listening moments and celebrating the fans, artists, and creators behind a record-breaking year. Read more <a href=\"https://newsroom.spotify.com/2024-wrapped/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+  { date: "Dec 2024", text: "2024 Spotify Wrapped", expand: { desc: "Spotify's annual global Wrapped campaign, celebrating the year in listening. This run marks Wrapped's tenth year. Read more <a href=\"https://newsroom.spotify.com/2024-wrapped/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1KqkYZZWX3pmuwvRYDN5OtNSq-IqPBkZA=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1gCvEgAdKe9hVQgAyorvcCeb_Y7n26soa=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1QmyWLN_m6wXqxpcKP5gR1HmD-rcqs6CY=s0" },
@@ -470,11 +487,16 @@ const ENTRIES = [
       { type: "image", src: "https://lh3.googleusercontent.com/d/1Q8xYQ219v8p_Dc4tjEQkj9_L7UMfFcQE=s0" },
     ],
   ] } },
-  { date: "Aug 2024", text: "Sabrina Carpenter Short n' Sweet", expand: { desc: "Coming soon." } },
+  { date: "Aug 2024", text: "Sabrina Carpenter Short n' Sweet", expand: { desc: "Spotify's album-launch campaign for Sabrina Carpenter's Short n' Sweet. Read more <a href=\"https://www.vogue.com/article/sabrina-carpenter-short-n-sweet-interview\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+    [
+      { type: "image", src: "https://lh3.googleusercontent.com/d/1JlxfW0iZmjWJ6w3xXL3oW1irpwMjGgTc=s0" },
+      { type: "image", src: "https://lh3.googleusercontent.com/d/1WGYjoktbXJP5dol-JZ-ZITOGI2NHFXRv=s0" },
+    ],
+  ] } },
   { date: "Aug 2022", text: "ADCOLOR FUTURE", expand: { desc: "Recognized as an ADCOLOR FUTURE, part of the next generation of diverse leaders in the creative industries. Read more <a href=\"https://adcolor.org/adcolor-announces-2022-class-of-adcolor-futures-and-inaugural-class-of-adcolor-leaders/\" target=\"_blank\" rel=\"noopener\">here</a>." } },
-  { date: "Sep 2021", text: "Spotify: Aspiring Marketing Professionals Program", expand: { desc: "Completed Spotify's AMP program, a fifteen-month rotational track, as one of three selected participants. Rotations included brand and creative, experiential marketing, and partner marketing." } },
+  { date: "Sep 2021", text: "Spotify: Aspiring Marketing Professionals Program", expand: { desc: "Completed Spotify's AMP rotational program. Rotations included brand and creative, experiential marketing, and partner marketing." } },
   { date: "Oct 2018", text: "Vota Conmigo", expand: { desc: "Univision's nationwide get-out-the-vote campaign for Hispanic America, featuring Jorge Ramos. Read more <a href=\"https://corporate.televisaunivision.com/press/press-releases/2018/10/23/univision-launches-vota-conmigo-initiative-to-empower-hispanic-america/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: { type: "embed", src: "https://drive.google.com/file/d/1bUFOkChSwb6pUKQbs3OU-HCiY8SzbcxP/preview" } } },
-  { date: "Aug 2018", text: "The Academy of Motion Picture Arts and Sciences: Gold Rising", expand: { desc: "Completed Gold Rising, an eight-week program from the Academy that pairs participants with film industry leaders and Academy member mentors. Read more <a href=\"https://www.oscars.org/news/academy-gold-enters-second-year-22-entertainment-industry-partners\" target=\"_blank\" rel=\"noopener\">here</a>.", media: { type: "image", src: "https://lh3.googleusercontent.com/d/1VYHKKynrappEY68Fap6zNHf-IqUgiqH1=s0" } } },
+  { date: "Aug 2018", text: "The Academy of Motion Picture Arts and Sciences: Gold Rising", expand: { desc: "Completed the Academy's Gold Rising, a development program that pairs participants with film industry leaders and Academy member mentors. Read more <a href=\"https://www.oscars.org/news/academy-gold-enters-second-year-22-entertainment-industry-partners\" target=\"_blank\" rel=\"noopener\">here</a>.", media: { type: "image", src: "https://lh3.googleusercontent.com/d/1VYHKKynrappEY68Fap6zNHf-IqUgiqH1=s0" } } },
 ];
 
 function buildMediaEl(m){
