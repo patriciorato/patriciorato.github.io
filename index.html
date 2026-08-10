@@ -547,7 +547,11 @@ function buildMediaEl(m){
     box.appendChild(video);
   } else if (m.type === "embed") {
     const iframe = document.createElement("iframe");
-    iframe.src = m.src;
+    // enablejsapi=1 turns on YouTube's postMessage API so closing an entry
+    // can explicitly tell the player to stop (see toggleEntry's closing
+    // branch) instead of relying on blanking src alone, which iOS Safari
+    // doesn't always tear down cleanly while a video is actively playing.
+    iframe.src = m.src + (m.src.includes("?") ? "&" : "?") + "enablejsapi=1";
     // NOTE: deliberately no loading="lazy" here. These iframes are already
     // built lazily (only on first click, see mediaBuilt above), so native
     // lazy-loading is redundant — and on mobile Safari it can misjudge
@@ -785,11 +789,14 @@ function renderLog(){
 
           // Someone collapsing the entry means they're done with it —
           // don't let audio/video keep playing out of sight. <video> can
-          // just be paused and rewound. Drive's <iframe> embed has no
-          // postMessage API we can pause remotely, so the only way to
-          // actually kill playback is to blank its src (stashing the real
-          // one on the element first so the "opening" branch above can
-          // put it back next time this entry is opened).
+          // just be paused and rewound. All embeds are YouTube now, which
+          // has a postMessage API — ask the player to stop *before* blanking
+          // the src (stashing the real one so the "opening" branch above can
+          // put it back next time). Blanking src alone should kill playback,
+          // but iOS Safari can let a playing video's audio session linger
+          // briefly (sometimes indefinitely) past an iframe teardown if it
+          // wasn't told to stop first — this postMessage is the fix for
+          // that specific mobile case; desktop was never affected.
           inner.querySelectorAll("video").forEach(v => {
             v.pause();
             v.currentTime = 0;
@@ -797,6 +804,9 @@ function renderLog(){
           inner.querySelectorAll("iframe").forEach(f => {
             const src = f.getAttribute("src");
             if (src) {
+              try {
+                f.contentWindow.postMessage(JSON.stringify({ event: "command", func: "stopVideo", args: [] }), "*");
+              } catch (e) {}
               f.dataset.src = src;
               f.removeAttribute("src");
             }
