@@ -127,7 +127,7 @@
 <body>
 <header id="top">
   <div class="header-inner">
-    <a class="logo" href="index.html">patricio</a>
+    <a class="logo" href="/">patricio</a>
     <div class="social">
       <a href="about.html" aria-label="About">about</a>
       <a href="https://www.instagram.com/patriciorato/" target="_blank" rel="noopener" aria-label="Instagram">
@@ -144,6 +144,7 @@
     <div class="bio">
       <p>Patricio is a Brooklyn-based Brand Manager on Spotify's global Brand &amp; Creative team, where he shapes dope marketing campaigns and narratives.</p>
       <p>He has completed multiple industry development programs, including ADCOLOR Futures, the Academy of Motion Picture Arts and Sciences' Gold Rising, and Spotify's Aspiring Marketing Professionals. Prior to Spotify, he worked at Wieden+Kennedy.</p>
+      <p>Available for professional inquiries.</p>
     </div>
     <div class="contact" id="contactBlock">
       <span class="copied-tooltip" id="copiedTooltip">copied to clipboard</span>
