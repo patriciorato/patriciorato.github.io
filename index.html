@@ -4,14 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>patricio</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%230037ff'/%3E%3C/svg%3E">
 <style>
   :root{
-    --bg:#faf9f7;
-    --ink:#121212;
+    --bg:#121212;
+    --ink:#faf9f7;
     --muted:#8a8a8a;
     --line:#c9c9c6;
     --hover:#0037ff;
-    --desc:#333333;
+    --desc:#faf9f7;
     --media-bg:#1a2230;
     --media-fg:#8fa0c0;
   }
@@ -21,7 +22,7 @@
     background:var(--bg);
     color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
-    font-size:14px;
+    font-size:12px;
     line-height:1.45;
     text-transform:lowercase;
     -webkit-font-smoothing:antialiased;
@@ -36,10 +37,13 @@
     position:fixed;
     inset:0;
     pointer-events:none;
-    z-index:0;
+    z-index:20;
     opacity:0.035;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
+  /* grain sits above the header (z-index 20 vs header's 10) so the texture
+     reads uniformly across the whole page instead of the header looking
+     like a flatter, more saturated swatch of the same color underneath it */
 
   /* soft accent glow that trails the cursor — very low opacity, purely ambient */
   .cursor-glow{
@@ -90,13 +94,13 @@
     padding:16px 24px 12px;
   }
   .logo{
-    font-size:14px;
+    font-size:12px;
     font-weight:700;
     text-decoration:none;
     letter-spacing:0.5px;
   }
   .logo:hover{
-    color:var(--ink);
+    color:var(--hover);
   }
   .social{
     display:flex;
@@ -106,6 +110,9 @@
   .social a{
     color:var(--muted);
     display:flex;
+    align-items:center;
+    text-decoration:none;
+    font-size:12px;
     transition:color 0.15s ease;
   }
   .social a:hover{
@@ -133,7 +140,9 @@
     transition:color 0.15s ease;
   }
   .entry.clickable:hover .date,
-  .entry.clickable:hover .headline{
+  .entry.clickable:hover .headline,
+  .entry.clickable.open .date,
+  .entry.clickable.open .headline{
     color:var(--hover);
   }
   /* default browser focus rings vary a lot in how ugly they are — this
@@ -147,13 +156,13 @@
   .entry .date{
     flex:0 0 92px;
     color:var(--muted);
-    font-size:14px;
+    font-size:12px;
     padding-top:2px;
     user-select:none;
   }
   .entry .headline{
     flex:1 1 auto;
-    font-size:14px;
+    font-size:12px;
   }
   .entry .headline a{
     text-decoration:underline;
@@ -191,7 +200,7 @@
   .panel-inner{
     padding-top:0px;
     padding-bottom:8px;
-    font-size:14px;
+    font-size:12px;
     color:var(--desc);
   }
   .panel-inner p{margin:0 0 6px;max-width:624px;}
@@ -352,10 +361,11 @@
 </style>
 </head>
 <body>
-<header>
+<header id="top">
   <div class="header-inner">
-    <a class="logo" href="#top">patricio</a>
+    <a class="logo" href="index.html">patricio</a>
     <div class="social">
+      <a href="about.html" aria-label="About">about</a>
       <a href="https://www.instagram.com/patriciorato/" target="_blank" rel="noopener" aria-label="Instagram">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" stroke="none"/></svg>
       </a>
@@ -427,7 +437,7 @@ const LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do e
 
 const ENTRIES = [
   { date: "Aug 2026", text: "this website", expand: { desc: "Vibe coded and launched this website with Claude <img class='claude-icon' src='https://lh3.googleusercontent.com/d/1PdVQAO5Y9XR07OelCi36wnN_zPrn1LiT=s0' alt=''>" } },
-  { date: "Jul 2026", text: "Fan Life 2026", expand: { desc: "Spotify's global brand tentpole campaign celebrating real fans and fandom rituals. This run features A$AP Rocky, Geese, Rosalía, Sailorr, Mary J. Blige, and Zara Larsson. Read more <a href=\"https://newsroom.spotify.com/2026-07-28/fan-life-launch-geese/\" target=\"_blank\" rel=\"noopener\">here</a> and <a href=\"https://adage.com/creativity/work/aa-spotify-fan-life-2/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+  { date: "Jul 2026", text: "Fan Life 2026", expand: { desc: "Spotify's global brand tentpole campaign celebrating real fans and fandom rituals. This run features A$AP Rocky, Geese, Rosalía, Sailorr, Mary J. Blige, and Zara Larsson. Read&nbsp;more <a href=\"https://newsroom.spotify.com/2026-07-28/fan-life-launch-geese/\" target=\"_blank\" rel=\"noopener\">here</a> and <a href=\"https://adage.com/creativity/work/aa-spotify-fan-life-2/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
     { type: "embed", src: "https://www.youtube.com/embed/Zsz0okJ1H44" },
     { type: "embed", src: "https://www.youtube.com/embed/vzr9fVxpeZ4" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1K1RQ1nToBJ-5WtKtc7oi9Snyh6IsCGX6=s0" },
@@ -446,7 +456,7 @@ const ENTRIES = [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1gY_EK7Uo-Cv-vkKTeVMmrW09cZfsPzpB=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1c31GFR_7IM3Ap_HCBLmBKnDNvj0tYcNM=s0" },
   ] } },
-  { date: "Dec 2025", text: "2025 Spotify Wrapped", expand: { desc: "Spotify's annual global Wrapped campaign, celebrating the year in listening. This run extends to fan destinations and live performances, rallying points for top fans. Read more <a href=\"https://newsroom.spotify.com/2025-12-03/wrapped-marketing-campaign/\" target=\"_blank\" rel=\"noopener\">here</a> and <a href=\"https://newsroom.spotify.com/2025-12-16/wrapped-fan-destination-photos/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+  { date: "Dec 2025", text: "2025 Spotify Wrapped", expand: { desc: "Spotify's annual global Wrapped campaign, celebrating the year in listening. This run extends to fan destinations and live performances, rallying points for top fans. Read&nbsp;more <a href=\"https://newsroom.spotify.com/2025-12-03/wrapped-marketing-campaign/\" target=\"_blank\" rel=\"noopener\">here</a> and <a href=\"https://newsroom.spotify.com/2025-12-16/wrapped-fan-destination-photos/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1w_A7mR4Bm95w0XPCEVfe9KJfETeuRsyV=s0" },
     [
       { type: "image", src: "https://lh3.googleusercontent.com/d/1YzWu8LLqhrKN71SBtTk--OQ6T-kYYvLR=s0" },
@@ -463,7 +473,7 @@ const ENTRIES = [
     ],
     { type: "image", src: "https://lh3.googleusercontent.com/d/1lz53ip2_eyBTf-_YIrdmvbXrAEBNDNH6=s0" },
   ] } },
-  { date: "Aug 2025", text: "Fan Life 2025", expand: { desc: "Spotify's global brand tentpole campaign celebrating real fans and fandom rituals. This run features Bad Bunny, Charli xcx, Lil Uzi Vert, Rezz, Sleep Token, Megan Moroney, and Pitbull. Read more <a href=\"https://www.papermag.com/fan-life-spotify\" target=\"_blank\" rel=\"noopener\">here</a> and <a href=\"https://newsroom.spotify.com/2025-08-26/fan-life-global-campaign-returns/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+  { date: "Aug 2025", text: "Fan Life 2025", expand: { desc: "Spotify's global brand tentpole campaign celebrating real fans and fandom rituals. This run features Bad Bunny, Charli xcx, Lil Uzi Vert, Rezz, Sleep Token, Megan Moroney, and Pitbull. Read&nbsp;more <a href=\"https://www.papermag.com/fan-life-spotify\" target=\"_blank\" rel=\"noopener\">here</a> and <a href=\"https://newsroom.spotify.com/2025-08-26/fan-life-global-campaign-returns/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
     { type: "embed", src: "https://www.youtube.com/embed/aToevwKYzmw" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1clyhoomBfDEE1xhQ8w63lQh1PONhdTg7=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1X-o1vxZ6dRC5K9WkH9o-oTauJjhNcUWB=s0" },
@@ -472,15 +482,15 @@ const ENTRIES = [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1tpCfkASM-wm3iP27ssGJNu8MahI7Y8Jq=s1600" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1yRiYiPgDMtCPUeJnISJyaAKSSe9Avk9g=s1600" },
   ] } },
-  { date: "Jul 2025", text: "KAROL G Tropicoqueta", expand: { desc: "Spotify's album-launch campaign for KAROL G's Tropicoqueta, featuring a fan activation with a surprise KAROL G performance. Read more <a href=\"https://newsroom.spotify.com/2025-07-23/karol-g-and-spotify-bring-tropicoqueta-to-life-with-an-unforgettable-nyc-celebration/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+  { date: "Jul 2025", text: "KAROL G Tropicoqueta", expand: { desc: "Spotify's album-launch campaign for KAROL G's Tropicoqueta, featuring a fan activation with a surprise KAROL G performance. Read&nbsp;more <a href=\"https://newsroom.spotify.com/2025-07-23/karol-g-and-spotify-bring-tropicoqueta-to-life-with-an-unforgettable-nyc-celebration/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
     { type: "embed", src: "https://www.youtube.com/embed/G-tVyXJVa9U" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1DZ6EWTVaNWEpsV5MO1zYAT2oScNA4b43=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1tTvUywCJJOFcA0rOMncLyo3WPZiYCacb=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1vpFGPPy2v0Jr8mO5yxbzhrcDRACXC6zC=s0" },
   ] } },
   { date: "Jan 2025", text: "Bad Bunny DeBÍ TiRAR MáS FOToS", expand: { desc: [
-    "Spotify's album-launch campaign for Benito's Debí Tirar Más Fotos, complete with a fan activation in partnership with the Federación de Dominó de Puerto Rico and a Bad Bunny performance. Read more <a href=\"https://www.playgroundweb.com/debi-tirar-mas-fotos-el-torneo-de-domino/\" target=\"_blank\" rel=\"noopener\">here</a>.",
-    "Tracking Bad Bunny: Cannes Lions and Clio-winning tracklist reveal scavenger hunt campaign in partnership with Rimas and Google Maps. Read more <a href=\"https://clios.com/winners-gallery/details/206722\" target=\"_blank\" rel=\"noopener\">here</a> and <a href=\"https://www.adweek.com/creativity/bad-bunnys-love-letter-to-puerto-rico-earns-his-label-a-cannes-lions-grand-prix/\" target=\"_blank\" rel=\"noopener\">here</a>.",
+    "Spotify's album-launch campaign for Benito's Debí Tirar Más Fotos, complete with a fan activation in partnership with the Federación de Dominó de Puerto Rico and a Bad Bunny performance. Read&nbsp;more <a href=\"https://www.playgroundweb.com/debi-tirar-mas-fotos-el-torneo-de-domino/\" target=\"_blank\" rel=\"noopener\">here</a>.",
+    "Tracking Bad Bunny: Cannes Lions and Clio-winning tracklist reveal scavenger hunt campaign in partnership with Rimas and Google Maps. Read&nbsp;more <a href=\"https://clios.com/winners-gallery/details/206722\" target=\"_blank\" rel=\"noopener\">here</a> and <a href=\"https://www.adweek.com/creativity/bad-bunnys-love-letter-to-puerto-rico-earns-his-label-a-cannes-lions-grand-prix/\" target=\"_blank\" rel=\"noopener\">here</a>.",
   ], media: [
     { type: "embed", src: "https://www.youtube.com/embed/-3Aq3u6EJZ4" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1mEJykn31wXfPRxEJOUVkxu31gosNdzH-=s0" },
@@ -490,7 +500,7 @@ const ENTRIES = [
     { type: "sticker", src: "https://lh3.googleusercontent.com/d/1zyUnF0tWksLct_BEucMiCq3ExbAXpLrW=s0", rotate: 18, size: 145, left: "-95px", bottom: "-15px" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1MSnGc7Sc5t1UaMfSdu8qhjOKmAVSI0Vn=s0" },
   ] } },
-  { date: "Dec 2024", text: "2024 Spotify Wrapped", expand: { desc: "Spotify's annual global Wrapped campaign, celebrating the year in listening. This run marks Wrapped's tenth year. Read more <a href=\"https://newsroom.spotify.com/2024-wrapped/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+  { date: "Dec 2024", text: "2024 Spotify Wrapped", expand: { desc: "Spotify's annual global Wrapped campaign, celebrating the year in listening. This run marks Wrapped's tenth year. Read&nbsp;more <a href=\"https://newsroom.spotify.com/2024-wrapped/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1KqkYZZWX3pmuwvRYDN5OtNSq-IqPBkZA=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1gCvEgAdKe9hVQgAyorvcCeb_Y7n26soa=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1QmyWLN_m6wXqxpcKP5gR1HmD-rcqs6CY=s0" },
@@ -503,15 +513,15 @@ const ENTRIES = [
       { type: "image", src: "https://lh3.googleusercontent.com/d/1Q8xYQ219v8p_Dc4tjEQkj9_L7UMfFcQE=s0" },
     ],
   ] } },
-  { date: "Aug 2024", text: "Sabrina Carpenter Short n' Sweet", expand: { desc: "Spotify's album-launch campaign for Sabrina Carpenter's Short n' Sweet, complete with a listening party fan activation hosted by Sabrina. Read more <a href=\"https://www.vogue.com/article/sabrina-carpenter-short-n-sweet-interview\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
+  { date: "Aug 2024", text: "Sabrina Carpenter Short n' Sweet", expand: { desc: "Spotify's album-launch campaign for Sabrina Carpenter's Short n' Sweet, complete with a listening party fan activation hosted by Sabrina. Read&nbsp;more <a href=\"https://www.vogue.com/article/sabrina-carpenter-short-n-sweet-interview\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1NfQe8tfiJPMAU9zt-mGmjH1PM99qS32p=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1ykCwx-Cl-6D--_wCNa7pepFkBVL1UWgi=s0" },
     { type: "image", src: "https://lh3.googleusercontent.com/d/1JlxfW0iZmjWJ6w3xXL3oW1irpwMjGgTc=s0" },
   ] } },
-  { date: "Aug 2022", text: "ADCOLOR FUTURE", expand: { desc: "Recognized as an ADCOLOR FUTURE, part of the next generation of diverse leaders in the creative industries. Read more <a href=\"https://adcolor.org/adcolor-announces-2022-class-of-adcolor-futures-and-inaugural-class-of-adcolor-leaders/\" target=\"_blank\" rel=\"noopener\">here</a>." } },
+  { date: "Aug 2022", text: "ADCOLOR Futures", expand: { desc: "Recognized as an ADCOLOR FUTURE, part of the next generation of diverse leaders in the creative industries. Read&nbsp;more <a href=\"https://adcolor.org/adcolor-announces-2022-class-of-adcolor-futures-and-inaugural-class-of-adcolor-leaders/\" target=\"_blank\" rel=\"noopener\">here</a>." } },
   { date: "Sep 2021", text: "Spotify: Aspiring Marketing Professionals Program", expand: { desc: "Completed Spotify's AMP rotational program. Rotations included brand and creative, experiential marketing, and partner marketing." } },
-  { date: "Oct 2018", text: "Vota Conmigo", expand: { desc: "Univision's nationwide get-out-the-vote campaign for Hispanic America, featuring Jorge Ramos. Read more <a href=\"https://corporate.televisaunivision.com/press/press-releases/2018/10/23/univision-launches-vota-conmigo-initiative-to-empower-hispanic-america/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: { type: "embed", src: "https://www.youtube.com/embed/mM4a4MZon18" } } },
-  { date: "Aug 2018", text: "The Academy of Motion Picture Arts and Sciences: Gold Rising", expand: { desc: "Completed the Academy's Gold Rising, a development program that pairs participants with film industry leaders and Academy member mentors. Read more <a href=\"https://www.oscars.org/news/academy-gold-enters-second-year-22-entertainment-industry-partners\" target=\"_blank\" rel=\"noopener\">here</a>.", media: { type: "image", src: "https://lh3.googleusercontent.com/d/1VYHKKynrappEY68Fap6zNHf-IqUgiqH1=s0" } } },
+  { date: "Oct 2018", text: "Vota Conmigo", expand: { desc: "Univision's nationwide get-out-the-vote campaign for Hispanic America, featuring Jorge Ramos. Read&nbsp;more <a href=\"https://corporate.televisaunivision.com/press/press-releases/2018/10/23/univision-launches-vota-conmigo-initiative-to-empower-hispanic-america/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: { type: "embed", src: "https://www.youtube.com/embed/mM4a4MZon18" } } },
+  { date: "Aug 2018", text: "The Academy of Motion Picture Arts and Sciences: Gold Rising", expand: { desc: "Completed the Academy's Gold Rising, a development program that pairs participants with film industry leaders and Academy member mentors. Read&nbsp;more <a href=\"https://www.oscars.org/news/academy-gold-enters-second-year-22-entertainment-industry-partners\" target=\"_blank\" rel=\"noopener\">here</a>.", media: { type: "image", src: "https://lh3.googleusercontent.com/d/1VYHKKynrappEY68Fap6zNHf-IqUgiqH1=s0" } } },
 ];
 
 function buildMediaEl(m){
