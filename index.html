@@ -271,13 +271,12 @@
     display:block;
     border-radius:2px;
   }
-  /* optional crop: ENTRIES media item can set crop:<percent> to trim that
-     much off the top AND bottom (centered), via aspect-ratio + cover */
+  /* optional crop: ENTRIES media item can set cropTop / cropBottom (percent
+     of original height) plus ratio (natural w/h), via aspect-ratio + cover */
   .media-item--photo.media-item--cropped{overflow:hidden;}
   .media-item--photo.media-item--cropped img{
     height:100%;
     object-fit:cover;
-    object-position:center;
   }
   /* Shown only if the image fails to load (e.g. blocked network in a
      preview sandbox) so there's still a visible placeholder box instead
@@ -476,7 +475,7 @@ const ENTRIES = [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1lz53ip2_eyBTf-_YIrdmvbXrAEBNDNH6=s0" },
     { type: "embed", src: "https://www.youtube.com/embed/zh-eENOPDi0" },
     { type: "embed", src: "https://www.youtube.com/embed/yZiCST8V3EE" },
-    { type: "image", src: "https://lh3.googleusercontent.com/d/1sQKfY9rex4KoRsS26Z77wltiv3lU1S0A=s0", crop: 20, ratio: 1536 / 1007 },
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1sQKfY9rex4KoRsS26Z77wltiv3lU1S0A=s0", cropTop: 10, cropBottom: 15, ratio: 1536 / 1007 },
     { type: "embed", src: "https://www.youtube.com/embed/UwSCDzYQb5A" },
   ] } },
   { date: "Aug 2025", text: "Fan Life 2025", expand: { desc: "Spotify's global brand tentpole campaign celebrating real fans and fandom rituals. This run features Bad Bunny, Charli xcx, Lil Uzi Vert, Rezz, Sleep Token, Megan Moroney, and Pitbull. Read&nbsp;more <a href=\"https://www.papermag.com/fan-life-spotify\" target=\"_blank\" rel=\"noopener\">here</a> and <a href=\"https://newsroom.spotify.com/2025-08-26/fan-life-global-campaign-returns/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
@@ -540,11 +539,14 @@ function buildMediaEl(m){
     const img = document.createElement("img");
     img.src = m.src;
     img.alt = m.alt || "";
-    if (m.crop && m.ratio) {
-      // m.ratio = natural width/height of the source; crop = % trimmed off
-      // top and bottom each, so visible height = (1 - 2*crop/100) of original
+    if (m.ratio && (m.cropTop || m.cropBottom)) {
+      // m.ratio = natural width/height of the source; cropTop / cropBottom =
+      // % of the original height trimmed off that edge. Visible height is
+      // (1 - top - bottom) of the original, anchored so the right slice shows.
+      const t = (m.cropTop || 0) / 100, b = (m.cropBottom || 0) / 100;
       wrap.classList.add("media-item--cropped");
-      wrap.style.aspectRatio = String(m.ratio / (1 - 2 * m.crop / 100));
+      wrap.style.aspectRatio = String(m.ratio / (1 - t - b));
+      img.style.objectPosition = "center " + (t / (t + b) * 100) + "%";
     }
     img.onerror = () => {
       // Image couldn't load (blocked network, dead link, etc) — fall back
