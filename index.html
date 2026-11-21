@@ -271,6 +271,14 @@
     display:block;
     border-radius:2px;
   }
+  /* optional crop: ENTRIES media item can set crop:<percent> to trim that
+     much off the top AND bottom (centered), via aspect-ratio + cover */
+  .media-item--photo.media-item--cropped{overflow:hidden;}
+  .media-item--photo.media-item--cropped img{
+    height:100%;
+    object-fit:cover;
+    object-position:center;
+  }
   /* Shown only if the image fails to load (e.g. blocked network in a
      preview sandbox) so there's still a visible placeholder box instead
      of nothing. Never shows on the real site once the photo loads fine. */
@@ -468,12 +476,8 @@ const ENTRIES = [
     { type: "image", src: "https://lh3.googleusercontent.com/d/1lz53ip2_eyBTf-_YIrdmvbXrAEBNDNH6=s0" },
     { type: "embed", src: "https://www.youtube.com/embed/zh-eENOPDi0" },
     { type: "embed", src: "https://www.youtube.com/embed/yZiCST8V3EE" },
+    { type: "image", src: "https://lh3.googleusercontent.com/d/1sQKfY9rex4KoRsS26Z77wltiv3lU1S0A=s0", crop: 20, ratio: 1536 / 1007 },
     { type: "embed", src: "https://www.youtube.com/embed/UwSCDzYQb5A" },
-    [
-      { type: "image", src: "https://lh3.googleusercontent.com/d/1YbKCeRq_MjeSrDijSt5FMzO3iAI3pyko=s0" },
-      { type: "image", src: "https://lh3.googleusercontent.com/d/1J-3QQJu9k_Qo7BBiTVnHDaMR2d-rDUZg=s0" },
-      { type: "image", src: "https://lh3.googleusercontent.com/d/1M6JNhByCvCbKI2G21SvD8QgpVMgirA9j=s0" },
-    ],
   ] } },
   { date: "Aug 2025", text: "Fan Life 2025", expand: { desc: "Spotify's global brand tentpole campaign celebrating real fans and fandom rituals. This run features Bad Bunny, Charli xcx, Lil Uzi Vert, Rezz, Sleep Token, Megan Moroney, and Pitbull. Read&nbsp;more <a href=\"https://www.papermag.com/fan-life-spotify\" target=\"_blank\" rel=\"noopener\">here</a> and <a href=\"https://newsroom.spotify.com/2025-08-26/fan-life-global-campaign-returns/\" target=\"_blank\" rel=\"noopener\">here</a>.", media: [
     { type: "embed", src: "https://www.youtube.com/embed/aToevwKYzmw" },
@@ -536,6 +540,12 @@ function buildMediaEl(m){
     const img = document.createElement("img");
     img.src = m.src;
     img.alt = m.alt || "";
+    if (m.crop && m.ratio) {
+      // m.ratio = natural width/height of the source; crop = % trimmed off
+      // top and bottom each, so visible height = (1 - 2*crop/100) of original
+      wrap.classList.add("media-item--cropped");
+      wrap.style.aspectRatio = String(m.ratio / (1 - 2 * m.crop / 100));
+    }
     img.onerror = () => {
       // Image couldn't load (blocked network, dead link, etc) — fall back
       // to a visible placeholder box instead of silently showing nothing.
